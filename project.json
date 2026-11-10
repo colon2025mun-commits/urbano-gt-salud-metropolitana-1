@@ -84,11 +84,11 @@
     }
   },
   "links": {
-    "repository": null,
-    "website": null,
+    "repository": "https://github.com/copernicuscentroamerica/urbano-gt-salud-metropolitana",
+    "website": "https://copernicuscentroamerica.github.io/urbano-gt-salud-metropolitana/",
     "demo": null,
-    "documentation": null,
-    "issue_tracker": null
+    "documentation": "https://github.com/copernicuscentroamerica/urbano-gt-salud-metropolitana#readme",
+    "issue_tracker": "https://github.com/copernicuscentroamerica/urbano-gt-salud-metropolitana/issues"
   },
   "governance": {
     "technical_owner": null,
