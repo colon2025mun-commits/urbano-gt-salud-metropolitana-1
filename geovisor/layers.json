@@ -1,0 +1,112 @@
+{
+  "schema_version": "1.0.0",
+  "project_id": "gt-salud-metropolitana",
+  "title": "Guatemala metropolitana: prevención de riesgos a la salud",
+  "country": {
+    "code": "GT",
+    "name": "Guatemala"
+  },
+  "map_view": {
+    "center": [
+      -90.34751,
+      14.62124
+    ],
+    "zoom": 10.4,
+    "declared_centroid": [
+      -90.34751,
+      14.62124
+    ],
+    "is_referential": true,
+    "reference_note": "Centroide declarado en S23: 14°37'16.48\"N, 90°20'51.03\"W (≈ 14.62124, -90.34751) para la Región Metropolitana de Guatemala (≈ 2.253 km² declarados).",
+    "area_declared": "2.253 km² declarados en S23 (límite vectorial metropolitano pendiente de confirmación).",
+    "scale_label": "Área metropolitana / conurbación"
+  },
+  "geolibre_integration": {
+    "web_app_base_url": "https://web.geolibre.app/",
+    "project_file": "geovisor/proyecto.geolibre.json",
+    "embed_layout": "maponly",
+    "supports_local_geojson_preview": true
+  },
+  "planned_controls": [
+    "Selector por municipio de la región metropolitana de Guatemala una vez cargado el límite oficial.",
+    "Conmutador de capas ambientales: cambio urbano (Sentinel-2), temperatura superficial terrestre LST (Landsat) y capas de inundación/deslizamientos con etiqueta explícita de fecha de vigencia.",
+    "Panel de advertencia epidemiológica: la exposición física o térmica superficial NO equivale a temperatura del aire, diagnóstico clínico ni alerta sanitaria activa.",
+    "Acceso al protocolo operativo de actualización anual del MSPAS."
+  ],
+  "external_references": [],
+  "layers": [
+    {
+      "id": "gt-salud-limites-metropolitanos",
+      "title": "Límites municipales de la Región Metropolitana de Guatemala",
+      "group": "Ámbito territorial",
+      "format": "geojson",
+      "geometry_type": "polygon",
+      "status": "en_preparacion",
+      "source_path": null,
+      "expected_file_hint": "geovisor/data/gt_metropolitana_municipios.geojson",
+      "resolution": "Vectorial administrativo oficial",
+      "style": {
+        "fill_color": "#14283F",
+        "fill_opacity": 0.07,
+        "stroke_color": "#14283F",
+        "stroke_width": 2
+      },
+      "caveat": "Pendiente de homologar qué municipios conforman los 2.253 km² declarados."
+    },
+    {
+      "id": "gt-salud-expansion-exposicion",
+      "title": "Expansión urbana reciente en zonas susceptibles (Sentinel-2)",
+      "group": "Dinámica urbana y amenazas",
+      "format": "geojson",
+      "geometry_type": "polygon",
+      "status": "en_preparacion",
+      "source_path": null,
+      "expected_file_hint": "geovisor/data/gt_salud_expansion.geojson",
+      "resolution": "10 m (Sentinel-2)",
+      "style": {
+        "fill_color": "#007F8B",
+        "fill_opacity": 0.45,
+        "stroke_color": "#004c54",
+        "stroke_width": 1
+      },
+      "caveat": "Las capas institucionales previas de inundación y deslizamiento se declaran desactualizadas y deben marcar su año."
+    },
+    {
+      "id": "gt-salud-lst-calor",
+      "title": "Anomalía relativa de Temperatura Superficial Terrestre (LST Landsat)",
+      "group": "Exposición térmica y salud",
+      "format": "xyz_or_cog",
+      "geometry_type": "raster",
+      "status": "en_preparacion",
+      "source_path": null,
+      "expected_file_hint": "URL XYZ/Tile o COG de LST estacional",
+      "resolution": "30 m remuestreado (banda térmica nativa Landsat 100 m)",
+      "style": {
+        "palette": [
+          "#313695",
+          "#ffffbf",
+          "#a50026"
+        ]
+      },
+      "caveat": "LST mide emisión térmica de cubiertas, no temperatura del aire ni estrés térmico clínico individual."
+    },
+    {
+      "id": "gt-salud-priorizacion-preventiva",
+      "title": "Indicadores agregados de priorización territorial preventiva",
+      "group": "Gestión preventiva MSPAS",
+      "format": "geojson",
+      "geometry_type": "polygon",
+      "status": "en_preparacion",
+      "source_path": null,
+      "expected_file_hint": "geovisor/data/gt_salud_indicadores_agregados.geojson",
+      "resolution": "Agregación municipal / sectorial pública",
+      "style": {
+        "fill_color": "#f46d43",
+        "fill_opacity": 0.45,
+        "stroke_color": "#a50026",
+        "stroke_width": 1.2
+      },
+      "caveat": "Orientado a planificación preventiva interinstitucional; no emite alertas tempranas operativas."
+    }
+  ]
+}

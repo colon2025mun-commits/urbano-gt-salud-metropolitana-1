@@ -1,0 +1,26 @@
+name: Bloqueo o solicitud de apoyo
+description: Reportar una dificultad técnica, metodológica o de acceso a datos (Iniciativa asociada a este repositorio: `gt-salud-metropolitana`.)
+title: "[Apoyo] "
+labels: ["bloqueado"]
+body:
+  - type: textarea
+    id: blocker_detail
+    attributes:
+      label: Dificultad o bloqueo identificado
+      description: Explica qué paso del PMV está detenido.
+    validations:
+      required: true
+  - type: textarea
+    id: attempts
+    attributes:
+      label: Intentos realizados
+      description: Qué pruebas, fuentes o scripts ya se revisaron.
+    validations:
+      required: true
+  - type: textarea
+    id: help_needed
+    attributes:
+      label: Apoyo específico requerido
+      description: Mentoría SIG/GEE, acceso institucional, despliegue GeoLibre, validación, etc.
+    validations:
+      required: true

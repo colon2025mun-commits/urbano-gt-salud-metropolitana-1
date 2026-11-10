@@ -1,0 +1,24 @@
+name: Solicitud de revisión
+description: Presentar un avance, capa o documento para revisión técnica o institucional
+title: "[Revisión] "
+labels: ["tipo:validacion"]
+body:
+  - type: input
+    id: product_name
+    attributes:
+      label: Producto o entregable a revisar
+    validations:
+      required: true
+  - type: input
+    id: evidence_url
+    attributes:
+      label: Enlace HTTPS a la evidencia, PR o vista previa
+      placeholder: https://...
+    validations:
+      required: true
+  - type: textarea
+    id: criterion_checked
+    attributes:
+      label: Criterio de aceptación evaluado y limitaciones observadas
+    validations:
+      required: true

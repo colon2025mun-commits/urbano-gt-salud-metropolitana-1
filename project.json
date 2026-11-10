@@ -1,0 +1,298 @@
+{
+  "schema_version": "1.0.0",
+  "id": "gt-salud-metropolitana",
+  "title": "Prevención de Riesgos",
+  "country": {
+    "code": "GT",
+    "name": "Guatemala"
+  },
+  "source_groups": [
+    7
+  ],
+  "summary": "La iniciativa propone actualizar información de expansión urbana y exposición a inundaciones, deslizamientos y calor para apoyar la prevención de riesgos a la salud y la coordinación entre MSPAS y municipalidades.",
+  "territory": {
+    "label": "Región metropolitana de Guatemala",
+    "administrative_units": [
+      "Región metropolitana de Guatemala"
+    ],
+    "geometry_url": null
+  },
+  "institutional_use": {
+    "problem": "El crecimiento no planificado y la ocupación de zonas vulnerables requieren información territorial actualizada para reconocer exposición y apoyar medidas preventivas de salud y gestión del riesgo.",
+    "institutions": [
+      "Ministerio de Salud Pública y Asistencia Social (MSPAS)"
+    ],
+    "primary_user": "Ministerio de Salud Pública y Asistencia Social y municipalidades, otros",
+    "decision_supported": "Sistema de Alertas Tempranas, Prevención de Riesgos Basada en Datos",
+    "expected_benefit": "Poner a disposición de usuarios municipales e institucionales un mapa, indicadores y un protocolo de actualización que faciliten decisiones basadas en datos."
+  },
+  "pmv": {
+    "description": "Un protocolo operativo, un script reproducible y un mapa con dashboard inicial de la región metropolitana, delimitados a variables y fuentes que el equipo pueda actualizar y revisar.",
+    "scope_status": "por_confirmar",
+    "acceptance_criteria": [
+      {
+        "id": "gt-salud-metropolitana-AC-01",
+        "description": "Se confirma el ámbito metropolitano y se registra la escala de las capas utilizadas.",
+        "status": "propuesta",
+        "evidence_required": "Evidencia documentada y revisión del equipo responsable."
+      },
+      {
+        "id": "gt-salud-metropolitana-AC-02",
+        "description": "Cada capa de amenaza incluye fecha y vigencia; las capas desactualizadas se identifican expresamente.",
+        "status": "propuesta",
+        "evidence_required": "Evidencia documentada y revisión del equipo responsable."
+      },
+      {
+        "id": "gt-salud-metropolitana-AC-03",
+        "description": "Se documenta el procedimiento reproducible de actualización y el papel de MSPAS.",
+        "status": "propuesta",
+        "evidence_required": "Evidencia documentada y revisión del equipo responsable."
+      },
+      {
+        "id": "gt-salud-metropolitana-AC-04",
+        "description": "El tablero distingue exposición territorial, amenaza y efectos sobre la salud, sin atribuir relaciones clínicas no documentadas.",
+        "status": "propuesta",
+        "evidence_required": "Evidencia documentada y revisión del equipo responsable."
+      },
+      {
+        "id": "gt-salud-metropolitana-AC-05",
+        "description": "El protocolo identifica responsables y condiciones para comunicar información o alertas; no se emiten alertas operativas desde una demostración.",
+        "status": "propuesta",
+        "evidence_required": "Evidencia documentada y revisión del equipo responsable."
+      }
+    ]
+  },
+  "status": {
+    "development": "por_confirmar",
+    "demo": "por_confirmar",
+    "technical_review": {
+      "state": "pendiente",
+      "evidence_url": null,
+      "date": null,
+      "reviewer": null
+    },
+    "institutional_validation": {
+      "state": "pendiente",
+      "evidence_url": null,
+      "date": null,
+      "reviewer": null
+    },
+    "adoption": {
+      "state": "no_documentada",
+      "evidence_url": null,
+      "date": null
+    }
+  },
+  "links": {
+    "repository": null,
+    "website": null,
+    "demo": null,
+    "documentation": null,
+    "issue_tracker": null
+  },
+  "governance": {
+    "technical_owner": null,
+    "content_owner": null,
+    "update_frequency": null,
+    "content_updated_at": null
+  },
+  "provenance": {
+    "sources": [
+      {
+        "id": "S23",
+        "label": "Ficha_07_Guatemala_MSPAS_Prevencion_Riesgos_Salud.docx",
+        "locator": "fuentes/S23_Ficha_07_Guatemala_MSPAS_Prevencion_Riesgos_Salud.md",
+        "url": null
+      }
+    ],
+    "statements": [
+      {
+        "pointer": "/title",
+        "status": "declarado",
+        "source_ids": [
+          "S23"
+        ],
+        "note": null
+      },
+      {
+        "pointer": "/summary",
+        "status": "declarado",
+        "source_ids": [
+          "S23"
+        ],
+        "note": "Síntesis editorial del problema y propósito declarados."
+      },
+      {
+        "pointer": "/territory",
+        "status": "declarado",
+        "source_ids": [
+          "S23"
+        ],
+        "note": "Ámbito descrito por el perfil; geometry_url pendiente de publicación autorizada."
+      },
+      {
+        "pointer": "/institutional_use",
+        "status": "declarado",
+        "source_ids": [
+          "S23"
+        ],
+        "note": "Las funciones son las declaradas por el perfil; no representan acuerdos nuevos."
+      },
+      {
+        "pointer": "/pmv",
+        "status": "propuesta",
+        "source_ids": [
+          "S23"
+        ],
+        "note": "La ficha solicita un tablero automatizado, pero no adjunta un sistema desplegado. La automatización y la alerta operativa requieren implementación y revisión específicas."
+      },
+      {
+        "pointer": "/status",
+        "status": "por_confirmar",
+        "source_ids": [],
+        "note": "El paquete conserva evidencia documental, pero no acredita el estado operativo actual."
+      },
+      {
+        "pointer": "/data_sources",
+        "status": "declarado",
+        "source_ids": [
+          "S23"
+        ],
+        "note": "Contenido técnico declarado por la fuente; no acredita ejecución ni validación."
+      },
+      {
+        "pointer": "/methodology",
+        "status": "declarado",
+        "source_ids": [
+          "S23"
+        ],
+        "note": "Contenido técnico declarado por la fuente; no acredita ejecución ni validación."
+      },
+      {
+        "pointer": "/expected_outputs",
+        "status": "declarado",
+        "source_ids": [
+          "S23"
+        ],
+        "note": "Contenido técnico declarado por la fuente; no acredita ejecución ni validación."
+      }
+    ]
+  },
+  "team": [],
+  "data_sources": [
+    {
+      "title": "Sentinel-2 / óptico multiespectral",
+      "provider": null,
+      "url": null,
+      "access": "por_confirmar",
+      "description": "Fuente o producto previsto en el perfil; disponibilidad efectiva y licencia deben comprobarse.",
+      "status": "declarado"
+    },
+    {
+      "title": "Sentinel-1 / radar SAR",
+      "provider": null,
+      "url": null,
+      "access": "por_confirmar",
+      "description": "Fuente o producto previsto en el perfil; disponibilidad efectiva y licencia deben comprobarse.",
+      "status": "declarado"
+    },
+    {
+      "title": "Landsat térmico / temperatura superficial (LST)",
+      "provider": null,
+      "url": null,
+      "access": "por_confirmar",
+      "description": "Fuente o producto previsto en el perfil; disponibilidad efectiva y licencia deben comprobarse.",
+      "status": "declarado"
+    },
+    {
+      "title": "Imágenes de muy alta resolución / ortofotos",
+      "provider": null,
+      "url": null,
+      "access": "por_confirmar",
+      "description": "Fuente o producto previsto en el perfil; disponibilidad efectiva y licencia deben comprobarse.",
+      "status": "declarado"
+    },
+    {
+      "title": "LiDAR / modelos digitales de superficie",
+      "provider": null,
+      "url": null,
+      "access": "por_confirmar",
+      "description": "Fuente o producto previsto en el perfil; disponibilidad efectiva y licencia deben comprobarse.",
+      "status": "declarado"
+    },
+    {
+      "title": "Copernicus DEM / elevación",
+      "provider": null,
+      "url": null,
+      "access": "por_confirmar",
+      "description": "Fuente o producto previsto en el perfil; disponibilidad efectiva y licencia deben comprobarse.",
+      "status": "declarado"
+    },
+    {
+      "title": "Cobertura del suelo global (ESA WorldCover, Dynamic World)",
+      "provider": null,
+      "url": null,
+      "access": "por_confirmar",
+      "description": "Fuente o producto previsto en el perfil; disponibilidad efectiva y licencia deben comprobarse.",
+      "status": "declarado"
+    },
+    {
+      "title": "Huellas de edificaciones (Google/Microsoft Open Buildings)",
+      "provider": null,
+      "url": null,
+      "access": "por_confirmar",
+      "description": "Fuente o producto previsto en el perfil; disponibilidad efectiva y licencia deben comprobarse.",
+      "status": "declarado"
+    },
+    {
+      "title": "OpenStreetMap (vías, edificaciones, equipamientos)",
+      "provider": null,
+      "url": null,
+      "access": "por_confirmar",
+      "description": "Fuente o producto previsto en el perfil; disponibilidad efectiva y licencia deben comprobarse.",
+      "status": "declarado"
+    },
+    {
+      "title": "Límites institucionales o administrativos",
+      "provider": null,
+      "url": null,
+      "access": "por_confirmar",
+      "description": "Fuente o producto previsto en el perfil; disponibilidad efectiva y licencia deben comprobarse.",
+      "status": "declarado"
+    },
+    {
+      "title": "Datos locales e institucionales declarados",
+      "provider": null,
+      "url": null,
+      "access": "institucional",
+      "description": "Límites municipales, departamentales y nacionales, capas de  inundación y deslizamientos (desactualizados), censos de población año 2018 de la region metropolitana de Guatemala",
+      "status": "declarado"
+    }
+  ],
+  "methodology": "Recopilación de datos a diferentes escalas, actualización, aplicación y producto final para los usuarios propuestos\n\nHerramientas previstas: No especificado",
+  "expected_outputs": [
+    "Capa geoespacial",
+    "Indicador urbano",
+    "Script reproducible",
+    "Reporte o informe automatizado",
+    "Dashboard / tablero",
+    "Visor web",
+    "Aplicación",
+    "Formulario de campo",
+    "Base de datos",
+    "Protocolo operativo",
+    "Mapa con dashboard/visor web, de la región metropolitana de Guatemala"
+  ],
+  "limitations": [
+    "La ficha menciona capas de inundación y deslizamientos desactualizadas y censo de 2018; no presentar los resultados como situación actual sin nueva evidencia.",
+    "El ámbito se declara de 2.253 km², pero no se adjunta un límite vectorial.",
+    "No se especifica un algoritmo de producción ni se adjunta código.",
+    "Temperatura superficial y exposición territorial no equivalen a temperatura del aire, diagnóstico clínico o predicción sanitaria individual.",
+    "La necesidad de alerta temprana es un objetivo declarado; no hay evidencia de un sistema de alertas operativo en el paquete."
+  ],
+  "tags": [
+    "salud",
+    "exposición",
+    "riesgo metropolitano"
+  ]
+}

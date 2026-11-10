@@ -1,0 +1,21 @@
+# Artefacto generado de publicación
+site/
+site_fork_test/
+
+# Entornos y cachés Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Credenciales y configuraciones locales privadas
+.env
+.env.*
+*.pem
+*.key
+pr-body.md
+
+# Archivos temporales del sistema
+.DS_Store
+Thumbs.db

@@ -1,0 +1,171 @@
+{
+  "schema_version": "1.0.0",
+  "id": "gt-salud-metropolitana-exposicion-preventiva",
+  "project_id": "gt-salud-metropolitana",
+  "title": "Indicadores territoriales de expansión urbana y exposición ambiental para prevención en salud en Guatemala metropolitana",
+  "summary": "Contribución prevista del MSPAS con capas agregadas de cambio urbano y exposición física/térmica acompañadas de protocolo de actualización anual para coordinación preventiva municipal.",
+  "product_type": "indicador",
+  "publication_status": "propuesto",
+  "coverage": {
+    "label": "Región metropolitana de Guatemala",
+    "geometry_url": null,
+    "spatial_resolution": "10 m (Sentinel-2) / agregación municipal metropolitana",
+    "scale_denominator": null
+  },
+  "temporal": {
+    "start": null,
+    "end": null,
+    "reference_date": null
+  },
+  "indicator": {
+    "name": "Índice agregado de exposición territorial ante amenazas hidrometeorológicas y calor superficial",
+    "unit": "Por definir en protocolo operativo MSPAS",
+    "definition": "Cruce territorial de crecimiento urbano observado, zonas susceptibles documentadas y anomalía térmica superficial, diferenciando vigencia de cada fuente.",
+    "aggregation": "Municipios / unidades agregadas de la Región Metropolitana de Guatemala"
+  },
+  "data_sources": [
+    {
+      "title": "Sentinel-2 / óptico multiespectral",
+      "provider": null,
+      "url": null,
+      "access": "por_confirmar",
+      "description": "Fuente o producto previsto en el perfil; disponibilidad efectiva y licencia deben comprobarse.",
+      "status": "declarado"
+    },
+    {
+      "title": "Sentinel-1 / radar SAR",
+      "provider": null,
+      "url": null,
+      "access": "por_confirmar",
+      "description": "Fuente o producto previsto en el perfil; disponibilidad efectiva y licencia deben comprobarse.",
+      "status": "declarado"
+    },
+    {
+      "title": "Landsat térmico / temperatura superficial (LST)",
+      "provider": null,
+      "url": null,
+      "access": "por_confirmar",
+      "description": "Fuente o producto previsto en el perfil; disponibilidad efectiva y licencia deben comprobarse.",
+      "status": "declarado"
+    },
+    {
+      "title": "Imágenes de muy alta resolución / ortofotos",
+      "provider": null,
+      "url": null,
+      "access": "por_confirmar",
+      "description": "Fuente o producto previsto en el perfil; disponibilidad efectiva y licencia deben comprobarse.",
+      "status": "declarado"
+    },
+    {
+      "title": "LiDAR / modelos digitales de superficie",
+      "provider": null,
+      "url": null,
+      "access": "por_confirmar",
+      "description": "Fuente o producto previsto en el perfil; disponibilidad efectiva y licencia deben comprobarse.",
+      "status": "declarado"
+    },
+    {
+      "title": "Copernicus DEM / elevación",
+      "provider": null,
+      "url": null,
+      "access": "por_confirmar",
+      "description": "Fuente o producto previsto en el perfil; disponibilidad efectiva y licencia deben comprobarse.",
+      "status": "declarado"
+    },
+    {
+      "title": "Cobertura del suelo global (ESA WorldCover, Dynamic World)",
+      "provider": null,
+      "url": null,
+      "access": "por_confirmar",
+      "description": "Fuente o producto previsto en el perfil; disponibilidad efectiva y licencia deben comprobarse.",
+      "status": "declarado"
+    },
+    {
+      "title": "Huellas de edificaciones (Google/Microsoft Open Buildings)",
+      "provider": null,
+      "url": null,
+      "access": "por_confirmar",
+      "description": "Fuente o producto previsto en el perfil; disponibilidad efectiva y licencia deben comprobarse.",
+      "status": "declarado"
+    },
+    {
+      "title": "OpenStreetMap (vías, edificaciones, equipamientos)",
+      "provider": null,
+      "url": null,
+      "access": "por_confirmar",
+      "description": "Fuente o producto previsto en el perfil; disponibilidad efectiva y licencia deben comprobarse.",
+      "status": "declarado"
+    },
+    {
+      "title": "Límites institucionales o administrativos",
+      "provider": null,
+      "url": null,
+      "access": "por_confirmar",
+      "description": "Fuente o producto previsto en el perfil; disponibilidad efectiva y licencia deben comprobarse.",
+      "status": "declarado"
+    },
+    {
+      "title": "Datos locales e institucionales declarados",
+      "provider": null,
+      "url": null,
+      "access": "institucional",
+      "description": "Límites municipales, departamentales y nacionales, capas de  inundación y deslizamientos (desactualizados), censos de población año 2018 de la region metropolitana de Guatemala",
+      "status": "declarado"
+    }
+  ],
+  "method": {
+    "description": "Recopilación de datos a diferentes escalas, actualización, aplicación y producto final para los usuarios propuestos\n\nHerramientas previstas: No especificado",
+    "version": "0.1.0-propuesta",
+    "code_url": null
+  },
+  "limitations": [
+    "La ficha menciona capas de inundación y deslizamientos desactualizadas y censo de 2018; no presentar los resultados como situación actual sin nueva evidencia.",
+    "El ámbito se declara de 2.253 km², pero no se adjunta un límite vectorial.",
+    "No se especifica un algoritmo de producción ni se adjunta código.",
+    "Temperatura superficial y exposición territorial no equivalen a temperatura del aire, diagnóstico clínico o predicción sanitaria individual.",
+    "La necesidad de alerta temprana es un objetivo declarado; no hay evidencia de un sistema de alertas operativo en el paquete."
+  ],
+  "validation": {
+    "state": "pendiente",
+    "evidence_url": null,
+    "date": null,
+    "reviewer": null
+  },
+  "outputs": {
+    "viewer_url": null,
+    "download_url": null,
+    "documentation_url": null,
+    "thumbnail_url": null
+  },
+  "license": {
+    "name": null,
+    "url": null,
+    "reuse_note": "Condiciones de reutilización y publicación pendientes de confirmación por la institución custodia."
+  },
+  "governance": {
+    "institution": "Ministerio de Salud Pública y Asistencia Social (MSPAS)",
+    "maintainer": null,
+    "update_frequency": null,
+    "content_updated_at": null
+  },
+  "provenance": {
+    "sources": [
+      {
+        "id": "S23",
+        "label": "Ficha_07_Guatemala_MSPAS_Prevencion_Riesgos_Salud.docx",
+        "locator": "fuentes/S23_Ficha_07_Guatemala_MSPAS_Prevencion_Riesgos_Salud.md",
+        "url": null
+      }
+    ],
+    "statements": [
+      {
+        "pointer": "",
+        "status": "propuesta",
+        "source_ids": [
+          "S23"
+        ],
+        "note": "Ficha inicial de contribución prevista al Atlas Urbano Regional estructurada a partir del perfil documental del proyecto."
+      }
+    ]
+  }
+}

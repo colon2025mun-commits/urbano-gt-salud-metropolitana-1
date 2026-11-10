@@ -1,0 +1,73 @@
+name: Validar y publicar sitio
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validar:
+    name: Validar sitio
+    runs-on: ubuntu-latest
+    env:
+      PAGES_SITE_MODE: ${{ vars.PAGES_SITE_MODE || 'preview' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependencias declaradas
+        run: |
+          if [ -f requirements.txt ]; then
+            python3 -m pip install -r requirements.txt
+          fi
+
+      - name: Validar fuentes
+        run: python3 scripts/validate.py --source
+
+      - name: Resolver catálogo local del hub
+        run: |
+          if [ -f data/projects.registry.json ]; then
+            python3 scripts/sync_catalog.py --offline
+          fi
+
+      - name: Construir sitio
+        run: python3 scripts/build_site.py --output site
+
+      - name: Validar resultado
+        run: python3 scripts/validate.py --site site
+
+      - name: Preparar artefacto
+        if: vars.PAGES_ENABLED == 'true' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./site
+
+  publicar:
+    needs: validar
+    if: vars.PAGES_ENABLED == 'true' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+
+      - name: Publicar artefacto
+        id: deployment
+        uses: actions/deploy-pages@v4

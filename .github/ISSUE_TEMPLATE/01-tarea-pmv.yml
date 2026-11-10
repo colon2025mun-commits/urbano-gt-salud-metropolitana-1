@@ -1,0 +1,28 @@
+name: Tarea del PMV
+description: Registrar un resultado concreto y su criterio de aceptación (Iniciativa asociada a este repositorio: `gt-salud-metropolitana`.)
+title: "[PMV] "
+labels: ["tipo:tarea"]
+body:
+  - type: textarea
+    id: expected_result
+    attributes:
+      label: Resultado esperado
+      description: Describe qué producto, script o capa quedará disponible al terminar.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Criterio de aceptación
+      description: Explica cómo se comprobará y qué evidencia verificable se adjuntará.
+    validations:
+      required: true
+  - type: input
+    id: target_date
+    attributes:
+      label: Fecha objetivo propuesta (sujeta a confirmación)
+      placeholder: AAAA-MM-DD
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Datos, accesos o apoyos necesarios

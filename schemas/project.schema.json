@@ -1,0 +1,881 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "title",
+    "country",
+    "source_groups",
+    "summary",
+    "territory",
+    "institutional_use",
+    "pmv",
+    "status",
+    "links",
+    "governance",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z]{2}-[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "country": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "name"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "source_groups": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1500
+    },
+    "territory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "administrative_units",
+        "geometry_url"
+      ],
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "administrative_units": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "geometry_url": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https://"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "institutional_use": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "problem",
+        "institutions",
+        "primary_user",
+        "decision_supported",
+        "expected_benefit"
+      ],
+      "properties": {
+        "problem": {
+          "type": "string",
+          "minLength": 1
+        },
+        "institutions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "primary_user": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "decision_supported": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "expected_benefit": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      }
+    },
+    "pmv": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "description",
+        "scope_status",
+        "acceptance_criteria"
+      ],
+      "properties": {
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "scope_status": {
+          "enum": [
+            "declarado",
+            "propuesta",
+            "por_confirmar"
+          ]
+        },
+        "acceptance_criteria": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "description",
+              "status",
+              "evidence_required"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "status": {
+                "enum": [
+                  "declarado",
+                  "propuesta",
+                  "por_confirmar"
+                ]
+              },
+              "evidence_required": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "development",
+        "demo",
+        "technical_review",
+        "institutional_validation",
+        "adoption"
+      ],
+      "properties": {
+        "development": {
+          "enum": [
+            "por_confirmar",
+            "definicion",
+            "en_desarrollo",
+            "demostrable",
+            "en_mantenimiento"
+          ]
+        },
+        "demo": {
+          "enum": [
+            "por_confirmar",
+            "no_disponible",
+            "disponible"
+          ]
+        },
+        "technical_review": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "evidence_url",
+            "date",
+            "reviewer"
+          ],
+          "properties": {
+            "state": {
+              "enum": [
+                "pendiente",
+                "en_revision",
+                "validado",
+                "con_observaciones",
+                "no_validado"
+              ]
+            },
+            "evidence_url": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uri",
+                  "pattern": "^https://"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "date": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "reviewer": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "state": {
+                    "enum": [
+                      "validado",
+                      "con_observaciones",
+                      "no_validado"
+                    ]
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "evidence_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "pattern": "^https://"
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "reviewer": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "institutional_validation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "evidence_url",
+            "date",
+            "reviewer"
+          ],
+          "properties": {
+            "state": {
+              "enum": [
+                "pendiente",
+                "en_revision",
+                "validado",
+                "con_observaciones",
+                "no_validado"
+              ]
+            },
+            "evidence_url": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uri",
+                  "pattern": "^https://"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "date": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "reviewer": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "state": {
+                    "enum": [
+                      "validado",
+                      "con_observaciones",
+                      "no_validado"
+                    ]
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "evidence_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "pattern": "^https://"
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "reviewer": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "adoption": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "evidence_url",
+            "date"
+          ],
+          "properties": {
+            "state": {
+              "enum": [
+                "no_documentada",
+                "piloto",
+                "uso_documentado"
+              ]
+            },
+            "evidence_url": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uri",
+                  "pattern": "^https://"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "date": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "state": {
+                    "enum": [
+                      "piloto",
+                      "uso_documentado"
+                    ]
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "evidence_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "pattern": "^https://"
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "links": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "website",
+        "demo",
+        "documentation",
+        "issue_tracker"
+      ],
+      "properties": {
+        "repository": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https://"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "website": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https://"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "demo": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https://"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "documentation": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https://"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "issue_tracker": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https://"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "governance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "technical_owner",
+        "content_owner",
+        "update_frequency",
+        "content_updated_at"
+      ],
+      "properties": {
+        "technical_owner": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "content_owner": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "update_frequency": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "content_updated_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sources",
+        "statements"
+      ],
+      "properties": {
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "label",
+              "locator",
+              "url"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "locator": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "minLength": 1
+              },
+              "url": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uri",
+                    "pattern": "^https://"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          },
+          "minItems": 1
+        },
+        "statements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "pointer",
+              "status",
+              "source_ids",
+              "note"
+            ],
+            "properties": {
+              "pointer": {
+                "type": "string"
+              },
+              "status": {
+                "enum": [
+                  "declarado",
+                  "propuesta",
+                  "por_confirmar"
+                ]
+              },
+              "source_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "uniqueItems": true
+              },
+              "note": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "minLength": 1
+              }
+            }
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "team": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "role",
+          "institution",
+          "github_username",
+          "profile_url"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "role": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          },
+          "institution": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          },
+          "github_username": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          },
+          "profile_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uri",
+                "pattern": "^https://"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "data_sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "title",
+          "provider",
+          "url",
+          "access",
+          "description",
+          "status"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "provider": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uri",
+                "pattern": "^https://"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "access": {
+            "enum": [
+              "abierto",
+              "institucional",
+              "restringido",
+              "por_confirmar"
+            ]
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          },
+          "status": {
+            "enum": [
+              "declarado",
+              "propuesta",
+              "por_confirmar"
+            ]
+          }
+        }
+      }
+    },
+    "methodology": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "expected_outputs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:copernicus:urbano:project:1.0.0",
+  "title": "Manifiesto público de una iniciativa urbana",
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "properties": {
+              "demo": {
+                "const": "disponible"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "links": {
+            "properties": {
+              "demo": {
+                "type": "string",
+                "format": "uri",
+                "pattern": "^https://"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "pmv": {
+            "properties": {
+              "scope_status": {
+                "const": "declarado"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "pmv": {
+            "properties": {
+              "description": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

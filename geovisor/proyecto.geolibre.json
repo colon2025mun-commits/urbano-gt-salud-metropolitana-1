@@ -1,0 +1,55 @@
+{
+  "version": "1.0.0",
+  "id": "geolibre-gt-salud-metropolitana",
+  "name": "Guatemala · Guatemala metropolitana: prevención de riesgos a la salud",
+  "description": "La iniciativa propone actualizar información de expansión urbana y exposición a inundaciones, deslizamientos y calor para apoyar la prevención de riesgos a la salud y la coordinación entre MSPAS y municipalidades.",
+  "metadata": {
+    "project_id": "gt-salud-metropolitana",
+    "community": "Comunidad Urbana Copernicus Centroamérica",
+    "referential_frame_only": true,
+    "note": "Centroide declarado en S23: 14°37'16.48\"N, 90°20'51.03\"W (≈ 14.62124, -90.34751) para la Región Metropolitana de Guatemala (≈ 2.253 km² declarados)."
+  },
+  "map": {
+    "engine": "maplibre",
+    "center": [
+      -90.34751,
+      14.62124
+    ],
+    "zoom": 10.4,
+    "bearing": 0,
+    "pitch": 0,
+    "basemap": "carto-positron"
+  },
+  "sources": {},
+  "layers": [],
+  "planned_layers": [
+    {
+      "id": "gt-salud-limites-metropolitanos",
+      "title": "Límites municipales de la Región Metropolitana de Guatemala",
+      "status": "en_preparacion",
+      "expected_file_hint": "geovisor/data/gt_metropolitana_municipios.geojson",
+      "caveat": "Pendiente de homologar qué municipios conforman los 2.253 km² declarados."
+    },
+    {
+      "id": "gt-salud-expansion-exposicion",
+      "title": "Expansión urbana reciente en zonas susceptibles (Sentinel-2)",
+      "status": "en_preparacion",
+      "expected_file_hint": "geovisor/data/gt_salud_expansion.geojson",
+      "caveat": "Las capas institucionales previas de inundación y deslizamiento se declaran desactualizadas y deben marcar su año."
+    },
+    {
+      "id": "gt-salud-lst-calor",
+      "title": "Anomalía relativa de Temperatura Superficial Terrestre (LST Landsat)",
+      "status": "en_preparacion",
+      "expected_file_hint": "URL XYZ/Tile o COG de LST estacional",
+      "caveat": "LST mide emisión térmica de cubiertas, no temperatura del aire ni estrés térmico clínico individual."
+    },
+    {
+      "id": "gt-salud-priorizacion-preventiva",
+      "title": "Indicadores agregados de priorización territorial preventiva",
+      "status": "en_preparacion",
+      "expected_file_hint": "geovisor/data/gt_salud_indicadores_agregados.geojson",
+      "caveat": "Orientado a planificación preventiva interinstitucional; no emite alertas tempranas operativas."
+    }
+  ]
+}
