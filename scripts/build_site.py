@@ -18,11 +18,15 @@ from typing import Any
 from markdown_lite import render_markdown
 from site_common import (
     TEMPLATE_VERSION,
+    THEME_VERSION,
     SiteContext,
     badge_html,
     compute_site_context,
     esc,
     format_spanish_date,
+    render_project_institutions_band,
+    render_regional_institutional_band,
+    render_upper_institutional_bar,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -126,6 +130,17 @@ def render_shell(
         else '<span>Portal regional: <code>clusterurbano</code> (enlace activo al publicar el hub)</span>'
     )
 
+    upper_bar_html = render_upper_institutional_bar(
+        ctx,
+        hub_link_html,
+        f"Comunidad Urbana Copernicus Centroamérica · <strong>{esc(country_name)} ({esc(country_code)})</strong> · ID: <code>{esc(pid)}</code>",
+    )
+
+    # En el geovisor (/aplicacion/) ubicamos la banda institucional regional debajo del área principal
+    # para dejar máximo espacio vertical al mapa y sus controles.
+    top_regional_band_html = "" if active_nav == "aplicacion" else render_regional_institutional_band(ctx)
+    bottom_regional_band_html = render_regional_institutional_band(ctx, extra_class="is-footer-band") if active_nav == "aplicacion" else ""
+
     nav_items = [
         ("inicio", "Inicio", ctx.site_url("")),
         ("proyecto", "Proyecto", ctx.site_url("proyecto/")),
@@ -167,12 +182,7 @@ def render_shell(
 <body>
   <a class="skip-link" href="#contenido-principal">Saltar al contenido principal</a>
   {work_banner_html}
-  <div class="topbar">
-    <div class="container">
-      <div>{hub_link_html}</div>
-      <div>Comunidad Urbana Copernicus Centroamérica · <strong>{esc(country_name)} ({esc(country_code)})</strong> · ID: <code>{esc(pid)}</code></div>
-    </div>
-  </div>
+  {upper_bar_html}
   <header class="site-header">
     <div class="container header-inner">
       <a class="brand" href="{html.escape(ctx.site_url(''), quote=True)}">
@@ -194,6 +204,7 @@ def render_shell(
   </header>
 
   {hero_html}
+  {top_regional_band_html}
 
   <main id="contenido-principal">
     <div class="container">
@@ -201,11 +212,12 @@ def render_shell(
     </div>
   </main>
 
+  {bottom_regional_band_html}
   <footer class="site-footer">
     <div class="container footer-grid">
       <div>
         <p class="footer-title">{esc(manifest['title'])}</p>
-        <p>Identificador estable: <code>{esc(pid)}</code> · Grupos de origen: {esc(", ".join(str(g) for g in manifest["source_groups"]))}.</p>
+        <p>Identificador estable: <code>{esc(pid)}</code> · Grupos de origen: {esc(", ".join(str(g) for g in manifest["source_groups"]))} · Tema común: <code>{esc(THEME_VERSION)}</code>.</p>
         <p>Última actualización del contenido por el equipo: <strong>{esc(updated_label)}</strong>.</p>
       </div>
       <div>
@@ -215,7 +227,7 @@ def render_shell(
           <a href="{html.escape(ctx.site_url('aplicacion/'), quote=True)}">Geovisor GeoLibre</a> ·
           <a href="{html.escape(ctx.site_url('metodologia/'), quote=True)}">Metodología</a> ·
           <a href="{html.escape(ctx.site_url('resultados/'), quote=True)}">Resultados y Atlas</a> ·
-          <a href="{html.escape(ctx.site_url('colaborar/'), quote=True)}">Colaborar (Fork/PR)</a>
+          <a href="{html.escape(ctx.site_url('colaborar/'), quote=True)}">Colaborar y Logos</a>
         </p>
       </div>
       <div>
@@ -507,7 +519,13 @@ def has_declared_demo_statement(manifest: dict[str, Any]) -> bool:
     return False
 
 
-def build_home_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: dict[str, Any], layers_cfg: dict[str, Any]) -> str:
+def build_home_page(
+    ctx: SiteContext,
+    manifest: dict[str, Any],
+    repo_cfg: dict[str, Any],
+    layers_cfg: dict[str, Any],
+    branding: dict[str, Any],
+) -> str:
     iu = manifest["institutional_use"]
     institutions_li = "".join(f"<li>{esc(inst)}</li>" for inst in iu.get("institutions", [])) or "<li>Institución por confirmar</li>"
     limitations_li = "".join(f"<li>{esc(lim)}</li>" for lim in manifest.get("limitations", [])[:5])
@@ -534,7 +552,7 @@ def build_home_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: dict[s
     <section class="hero">
       <div class="container">
         <div class="hero-eyebrow">
-          <span class="badge badge-lime">{esc(manifest['country']['name'])}</span>
+          <span class="badge badge-lime">{esc(manifest['country']['name'])} · {esc(manifest['territory']['label'])}</span>
           <span class="badge badge-country">Grupos de origen: {esc(', '.join(str(g) for g in manifest['source_groups']))}</span>
           {badge_html(manifest['pmv']['scope_status'], 'Alcance PMV')}
         </div>
@@ -558,21 +576,25 @@ def build_home_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: dict[s
     new_task_url = f"{repo_url}/issues/new?template=01-tarea-pmv.yml" if repo_url else ctx.site_url("colaborar/")
     support_url = f"{repo_url}/issues/new?template=02-bloqueo-apoyo.yml" if repo_url else ctx.site_url("colaborar/")
     pulls_url = f"{repo_url}/pulls" if repo_url else ctx.site_url("colaborar/")
+    colaborar_logos_href = ctx.site_url("colaborar/") + "#anadir-actualizar-logos"
 
     body = f"""
     {render_status_strip(manifest)}
 
+    {render_project_institutions_band(ctx, branding, manifest, colaborar_href=colaborar_logos_href)}
+
     <section class="section">
-      <div class="card" style="border-left:4px solid var(--c-teal);">
+      <div class="card" style="border-left:4px solid var(--c-brand-blue);">
         <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0.75rem;">
           <div>
             <span class="badge badge-ok">Trabajar en este proyecto</span>
             <h2 style="margin:0.35rem 0 0.25rem;font-size:1.2rem;">Accesos directos para participantes e instituciones</h2>
-            <p style="margin:0;font-size:0.9rem;color:var(--c-text-muted);">Usa estos enlaces para incorporar avances, ejecutar el ejercicio práctico (Google Colab o Google Earth Engine con la misma cuenta de Google que uses en Antigravity), registrar tareas o solicitar apoyo técnico.</p>
+            <p style="margin:0;font-size:0.9rem;color:var(--c-text-muted);">Usa estos enlaces para incorporar avances, actualizar logos institucionales, ejecutar el ejercicio práctico (Google Colab o Google Earth Engine con la misma cuenta de Google que uses en Antigravity), registrar tareas o solicitar apoyo técnico.</p>
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
             {f'<a class="btn btn-outline btn-xs" href="{html.escape(repo_url, quote=True)}" target="_blank" rel="noopener noreferrer">Repositorio oficial ↗</a>' if repo_url else ''}
             <a class="btn btn-teal btn-xs" href="{html.escape(ctx.site_url('colaborar/'), quote=True)}">Guía de incorporación</a>
+            <a class="btn btn-outline btn-xs" href="{html.escape(colaborar_logos_href, quote=True)}">Añadir o actualizar logos</a>
             <a class="btn btn-primary btn-xs" href="{html.escape(ejercicio_url, quote=True)}">Ejercicio Colab / GEE ↗</a>
             <a class="btn btn-outline btn-xs" href="{html.escape(new_task_url, quote=True)}" target="_blank" rel="noopener noreferrer">Crear tarea ↗</a>
             <a class="btn btn-outline btn-xs" href="{html.escape(support_url, quote=True)}" target="_blank" rel="noopener noreferrer">Solicitar apoyo ↗</a>
@@ -657,7 +679,14 @@ def build_home_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: dict[s
     )
 
 
-def build_proyecto_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: dict[str, Any], project_md: str, pmv_md: str) -> str:
+def build_proyecto_page(
+    ctx: SiteContext,
+    manifest: dict[str, Any],
+    repo_cfg: dict[str, Any],
+    project_md: str,
+    pmv_md: str,
+    branding: dict[str, Any],
+) -> str:
     ac_rows = []
     for ac in manifest["pmv"].get("acceptance_criteria", []):
         ac_rows.append(
@@ -699,6 +728,7 @@ def build_proyecto_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: di
     updated_label = format_spanish_date(gov.get("content_updated_at"), "Pendiente de informar")
     repo_url = (manifest["links"].get("repository") or "").rstrip("/")
     support_url = f"{repo_url}/issues/new?template=02-bloqueo-apoyo.yml" if repo_url else ctx.site_url("colaborar/")
+    colaborar_logos_href = ctx.site_url("colaborar/") + "#anadir-actualizar-logos"
 
     hero = f"""
     <section class="hero">
@@ -707,14 +737,16 @@ def build_proyecto_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: di
           <span class="badge badge-lime">Ficha completa del proyecto</span>
           <span class="badge badge-country">{esc(manifest['id'])}</span>
         </div>
-        <h1>Alcance, criterios del PMV y trazabilidad documental</h1>
-        <p class="hero-lead">Información pública estructurada desde el perfil de la iniciativa y su manifiesto canónico <code>project.json</code>.</p>
+        <h1>{esc(manifest['title'])}</h1>
+        <p class="hero-lead">Alcance territorial en {esc(manifest['territory']['label'])}, criterios del PMV, instituciones participantes y trazabilidad documental desde <code>project.json</code>.</p>
       </div>
     </section>
     """
 
     body = f"""
     {render_status_strip(manifest)}
+
+    {render_project_institutions_band(ctx, branding, manifest, colaborar_href=colaborar_logos_href)}
 
     <section class="section">
       <div class="card">
@@ -764,7 +796,7 @@ def build_proyecto_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: di
         </table>
       </div>
       <details class="card" style="margin-top:1rem;">
-        <summary style="cursor:pointer;font-weight:700;color:var(--c-navy);">Ver registro técnico de procedencia por campo (JSON Pointer y códigos internos de auditoría)</summary>
+        <summary style="cursor:pointer;font-weight:700;color:var(--c-brand-blue);">Ver registro técnico de procedencia por campo (JSON Pointer y códigos internos de auditoría)</summary>
         <div class="table-wrap" style="margin-top:0.85rem;">
           <table>
             <thead><tr><th>Campo (JSON Pointer)</th><th>Estado</th><th>Fuentes asociadas</th><th>Nota metodológica</th></tr></thead>
@@ -786,7 +818,13 @@ def build_proyecto_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: di
     )
 
 
-def build_aplicacion_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: dict[str, Any], layers_cfg: dict[str, Any]) -> str:
+def build_aplicacion_page(
+    ctx: SiteContext,
+    manifest: dict[str, Any],
+    repo_cfg: dict[str, Any],
+    layers_cfg: dict[str, Any],
+    branding: dict[str, Any],
+) -> str:
     pid = manifest["id"]
     mv = layers_cfg.get("map_view", {})
     grouped: dict[str, list[dict[str, Any]]] = {}
@@ -882,15 +920,15 @@ def build_aplicacion_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: 
         )
 
     hero = f"""
-    <section class="hero">
+    <section class="hero hero-compact">
       <div class="container">
-        <div class="hero-eyebrow">
+        <div class="hero-eyebrow" style="margin-bottom:0.45rem;">
           <span class="badge badge-lime">Geovisor basado en GeoLibre</span>
-          <span class="badge badge-country">{esc(pid)}</span>
+          <span class="badge badge-country">{esc(pid)} · {esc(manifest['territory']['label'])}</span>
           {badge_html(manifest['status']['demo'], 'Estado Demo')}
         </div>
         <h1>Geovisor del proyecto y espacio de integración de capas</h1>
-        <p class="hero-lead">Visor integrado sobre MapLibre GL JS y proyecto exportable <code>geovisor/proyecto.geolibre.json</code> (v0.2.0) compatible con GeoLibre Studio para desplegar las capas de <code>geovisor/capas/</code>.</p>
+        <p class="hero-lead">Visor integrado sobre MapLibre GL JS y proyecto exportable <code>geovisor/proyecto.geolibre.json</code> (v0.2.0) compatible con GeoLibre Studio.</p>
       </div>
     </section>
     """
@@ -902,9 +940,10 @@ def build_aplicacion_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: 
         if geolibre_full_url.startswith("https://")
         else "https://web.geolibre.app/"
     )
+    colaborar_logos_href = ctx.site_url("colaborar/") + "#anadir-actualizar-logos"
 
     body = f"""
-    <div class="callout">
+    <div class="callout" style="margin-top:0;margin-bottom:1rem;padding:0.75rem 1rem;">
       <strong>Nota de integridad cartográfica ({esc(mv.get('scale_label', 'Escala del perfil'))})</strong>
       <span>{esc(mv.get('reference_note'))} Los límites administrativos procedentes de fuentes abiertas (OpenStreetMap ODbL) se muestran con carácter referencial hasta su homologación institucional.</span>
     </div>
@@ -937,30 +976,30 @@ def build_aplicacion_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: 
           </div>
 
           <div class="geovisor-panel" data-gv-panel="repo-folder">
-            <h3 style="margin-top:0;font-size:1rem;color:var(--c-navy);">Cargar capa desde carpeta del repositorio</h3>
+            <h3 style="margin-top:0;font-size:1rem;color:var(--c-brand-blue);">Cargar capa desde carpeta del repositorio</h3>
             <p style="font-size:0.82rem;">Lee los archivos publicados en <code>geovisor/capas/</code> de <strong>esta vista</strong> (en una copia personal o fork lee exclusivamente tu repositorio para no mezclar capas con el repositorio oficial).</p>
             <div style="display:flex;flex-wrap:wrap;gap:0.45rem;margin-bottom:0.75rem;">
               <button type="button" id="gv-refresh-repo-folder" class="btn btn-teal btn-xs">Leer / Refrescar carpeta</button>
               {repo_capas_gh_btn}
             </div>
-            <p id="gv-repo-folder-status" style="font-size:0.8rem;color:var(--c-teal-dark);font-weight:600;margin-bottom:0.6rem;">Consultando carpeta geovisor/capas/...</p>
+            <p id="gv-repo-folder-status" style="font-size:0.8rem;color:var(--c-brand-blue);font-weight:600;margin-bottom:0.6rem;">Consultando carpeta geovisor/capas/...</p>
             <div id="gv-repo-folder-list"></div>
           </div>
 
           <div class="geovisor-panel" data-gv-panel="local">
-            <h3 style="margin-top:0;font-size:1rem;color:var(--c-navy);">Inspeccionar archivo desde tu equipo (Archivo local)</h3>
+            <h3 style="margin-top:0;font-size:1rem;color:var(--c-brand-blue);">Inspeccionar archivo desde tu equipo (Archivo local)</h3>
             <p style="font-size:0.84rem;">Arrastra o selecciona un archivo <code>.geojson</code> o <code>.kml</code> desde tu computadora para verificar su geometría y atributos antes de subirlo a <code>geovisor/capas/</code>.</p>
             <div class="dropzone" id="gv-dropzone" tabindex="0" role="button" aria-label="Seleccionar archivo GeoJSON o KML local">
               <strong>Haz clic o arrastra aquí un .geojson / .kml</strong>
               <div style="font-size:0.78rem;margin-top:0.25rem;">WGS84 (EPSG:4326) recomendado</div>
             </div>
             <input type="file" id="gv-local-geojson-input" accept=".geojson,.json,.kml,application/geo+json,application/json" class="hidden">
-            <p id="gv-local-status" style="font-size:0.82rem;color:var(--c-teal-dark);font-weight:600;">Ningún archivo temporal cargado.</p>
+            <p id="gv-local-status" style="font-size:0.82rem;color:var(--c-brand-blue);font-weight:600;">Ningún archivo temporal cargado.</p>
             <button type="button" id="gv-clear-local" class="btn btn-outline btn-xs hidden">Quitar capa temporal</button>
           </div>
 
           <div class="geovisor-panel" data-gv-panel="embed">
-            <h3 style="margin-top:0;font-size:1rem;color:var(--c-navy);">Integración con GeoLibre Studio</h3>
+            <h3 style="margin-top:0;font-size:1rem;color:var(--c-brand-blue);">Integración con GeoLibre Studio</h3>
             <p id="geolibre-embed-notice" style="font-size:0.83rem;">Este sitio combina dos piezas complementarias: el <strong>visor integrado (MapLibre GL JS)</strong> para consulta rápida de vectores y el archivo de proyecto <code>geovisor/proyecto.geolibre.json</code> (esquema oficial v0.2.0 con <code>mapView</code>, <code>layers</code> y <code>styles</code>) para abrir la iniciativa completa en <strong>GeoLibre Studio</strong>.</p>
             <div style="display:flex;flex-direction:column;gap:0.55rem;margin-top:0.85rem;">
               <a class="btn btn-primary" href="{html.escape(studio_open_href, quote=True)}" target="_blank" rel="noopener noreferrer">Abrir proyecto en GeoLibre Studio ↗</a>
@@ -973,7 +1012,7 @@ def build_aplicacion_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: 
           <div class="geovisor-toolbar">
             <div><strong>{esc(layers_cfg.get('title', manifest['title']))}</strong> · Motor MapLibre / GeoLibre</div>
             <div class="geovisor-toolbar-actions">
-              <button type="button" id="gv-open-folder-tab" class="btn btn-teal btn-xs">Cargar desde carpeta</button>
+              <button type="button" id="gv-open-folder-tab" class="btn btn-outline-light btn-xs">Cargar desde carpeta</button>
               <button type="button" id="gv-reset-view" class="btn btn-outline-light btn-xs">Encuadre inicial</button>
               <a class="btn btn-outline-light btn-xs" href="{geolibre_json_href}">JSON GeoLibre</a>
               <a id="btn-open-geolibre-studio" class="btn btn-primary btn-xs" href="{html.escape(studio_open_href, quote=True)}" target="_blank" rel="noopener noreferrer">Abrir en GeoLibre Studio ↗</a>
@@ -983,7 +1022,7 @@ def build_aplicacion_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: 
           <iframe id="geolibre-embed-iframe" class="geovisor-iframe" title="Visor GeoLibre embebido" allowfullscreen loading="lazy"></iframe>
           <div class="geovisor-statusbar">
             <span id="gv-coords-readout">Encuadre referencial inicial: Lat {mv.get('center', [0, 0])[1]:.4f} · Lon {mv.get('center', [0, 0])[0]:.4f}</span>
-            <span>Ubicación referencial según perfil · Sin resultados simulados</span>
+            <span>Ubicación referencial según perfil · Colores analíticos independientes de la marca</span>
           </div>
         </div>
       </div>
@@ -1031,6 +1070,8 @@ def build_aplicacion_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: 
     </section>
 
     {ext_refs_html}
+
+    {render_project_institutions_band(ctx, branding, manifest, colaborar_href=colaborar_logos_href)}
     """
 
     return render_shell(
@@ -1045,7 +1086,13 @@ def build_aplicacion_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: 
     )
 
 
-def build_metodologia_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: dict[str, Any], metodologia_md: str) -> str:
+def build_metodologia_page(
+    ctx: SiteContext,
+    manifest: dict[str, Any],
+    repo_cfg: dict[str, Any],
+    metodologia_md: str,
+    branding: dict[str, Any],
+) -> str:
     ds_rows = []
     for ds in manifest.get("data_sources", []):
         url_part = (
@@ -1069,6 +1116,7 @@ def build_metodologia_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg:
     )
 
     lim_li = "".join(f"<li>{esc(l)}</li>" for l in manifest.get("limitations", [])) or "<li>Sin limitaciones adicionales registradas.</li>"
+    colaborar_logos_href = ctx.site_url("colaborar/") + "#anadir-actualizar-logos"
 
     hero = f"""
     <section class="hero">
@@ -1078,7 +1126,7 @@ def build_metodologia_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg:
           <span class="badge badge-country">{esc(manifest['id'])}</span>
         </div>
         <h1>Metodología, fuentes de datos y limitaciones</h1>
-        <p class="hero-lead">Fuentes satelitales Copernicus, registros locales declarados, secuencia metodológica y condiciones de interpretación.</p>
+        <p class="hero-lead">Fuentes satelitales Copernicus, registros locales declarados en {esc(manifest['territory']['label'])}, secuencia metodológica y condiciones de interpretación.</p>
       </div>
     </section>
     """
@@ -1101,6 +1149,8 @@ def build_metodologia_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg:
         <ul>{lim_li}</ul>
       </div>
     </section>
+
+    {render_project_institutions_band(ctx, branding, manifest, colaborar_href=colaborar_logos_href)}
     """
 
     return render_shell(
@@ -1120,6 +1170,7 @@ def build_resultados_page(
     repo_cfg: dict[str, Any],
     atlas_products: list[dict[str, Any]],
     continuidad_md: str,
+    branding: dict[str, Any],
 ) -> str:
     outputs_li = "".join(f"<li>{esc(o)}</li>" for o in manifest.get("expected_outputs", [])) or "<li>Productos esperados por detallar.</li>"
 
@@ -1160,6 +1211,8 @@ def build_resultados_page(
             """
         )
 
+    colaborar_logos_href = ctx.site_url("colaborar/") + "#anadir-actualizar-logos"
+
     hero = f"""
     <section class="hero">
       <div class="container">
@@ -1168,7 +1221,7 @@ def build_resultados_page(
           <span class="badge badge-country">{esc(manifest['id'])}</span>
         </div>
         <h1>Resultados disponibles, productos esperados y aporte al Atlas</h1>
-        <p class="hero-lead">Separación explícita entre insumos/evidencias documentales existentes y productos comprometidos como meta del PMV.</p>
+        <p class="hero-lead">Separación explícita entre insumos/evidencias documentales existentes y productos comprometidos como meta del PMV en {esc(manifest['territory']['label'])}.</p>
       </div>
     </section>
     """
@@ -1205,6 +1258,8 @@ def build_resultados_page(
         {render_markdown(continuidad_md)}
       </div>
     </section>
+
+    {render_project_institutions_band(ctx, branding, manifest, colaborar_href=colaborar_logos_href)}
     """
 
     return render_shell(
@@ -1218,7 +1273,12 @@ def build_resultados_page(
     )
 
 
-def build_colaborar_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: dict[str, Any]) -> str:
+def build_colaborar_page(
+    ctx: SiteContext,
+    manifest: dict[str, Any],
+    repo_cfg: dict[str, Any],
+    branding: dict[str, Any],
+) -> str:
     pid = manifest["id"]
     proposed_owner = repo_cfg.get("proposed_owner", "copernicuscentroamerica")
     proposed_repo = repo_cfg.get("proposed_repository", f"urbano-{pid}")
@@ -1228,6 +1288,7 @@ def build_colaborar_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: d
         if ctx.canonical_repository
         else f"{proposed_owner}/{proposed_repo}"
     )
+    effective_slug = ctx.github_repository or canonical_slug
     repo_status_note = (
         f"Repositorio canónico verificado: <code>{esc(canonical_slug)}</code>."
         if confirmed_repo_url
@@ -1262,21 +1323,32 @@ python3 -m http.server 8000 --directory site"""
 
     pr_cmds = f"""# 5. Confirmar solo los archivos modificados y enviar Pull Request al canónico
 git status --short
-git add project.json content/ geovisor/
-git commit -m "Incorpora capa validada al geovisor de {pid}"
+git add project.json content/ geovisor/ branding/
+git commit -m "Actualiza avances y recursos verificados de {pid}"
 git push -u origin feat/nueva-capa-geovisor
 
-gh pr create --repo {canonical_slug} --base main --head TU_USUARIO_GITHUB:feat/nueva-capa-geovisor --title "Actualiza geovisor y documentación ({pid})" --body-file pr-body.md"""
+gh pr create --repo {canonical_slug} --base main --head TU_USUARIO_GITHUB:feat/nueva-capa-geovisor --title "Actualiza geovisor, logos o documentación ({pid})" --body-file pr-body.md"""
+
+    antigravity_logo_prompt = f"""He copiado los archivos de logos de las instituciones participantes del proyecto {pid} ({manifest['title']}) en la carpeta branding/logos/ de este repositorio.
+Por favor:
+1. Inspecciona los archivos nuevos dentro de branding/logos/ (comprueba que sean .svg o .png con proporciones naturales y peso menor a 2 MB).
+2. Actualiza branding/project-branding.json conservando intacto "project_id": "{pid}" y "theme_version": "{THEME_VERSION}", y registrando cada institución en la lista "institutions" con su "id", "name", "acronym", "role", "logo_path", "alt_text" descriptivo, "url" (si aplica con https://), "order" y "aspect_hint" ("horizontal", "vertical" o "square").
+3. Ejecuta python scripts/validate.py --source, python scripts/build_site.py --output site y python scripts/validate.py --site site para confirmar que toda la validación pasa sin errores.
+4. Muéstrame git status y git diff branding/project-branding.json y deja lista una rama feat/logos-institucionales para enviar el Pull Request al repositorio {canonical_slug}."""
 
     hero = f"""
     <section class="hero">
       <div class="container">
         <div class="hero-eyebrow">
-          <span class="badge badge-lime">Colaboración GitHub y GeoLibre</span>
+          <span class="badge badge-lime">Colaboración GitHub, Logos y GeoLibre</span>
           <span class="badge badge-country">{esc(pid)}</span>
         </div>
-        <h1>Cómo colaborar en esta iniciativa (Fork, Clone, Capas y PR)</h1>
-        <p class="hero-lead">Cada iniciativa evoluciona en su propio repositorio independiente. Las personas participantes trabajan en ramas de su fork personal y proponen mejoras mediante Pull Request.</p>
+        <h1>Cómo colaborar en esta iniciativa (Fork, Capas, Logos y PR)</h1>
+        <p class="hero-lead">Cada iniciativa evoluciona en su propio repositorio independiente. Las personas participantes trabajan en ramas de su fork personal y proponen mejoras, capas geoespaciales o logos institucionales mediante Pull Request.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#anadir-actualizar-logos">Añadir o actualizar logos</a>
+          <a class="btn btn-outline-light" href="#ejercicio-practico">Ejercicio práctico Colab / GEE</a>
+        </div>
       </div>
     </section>
     """
@@ -1284,15 +1356,132 @@ gh pr create --repo {canonical_slug} --base main --head TU_USUARIO_GITHUB:feat/n
     hub_base = (ctx.hub_url or "https://copernicuscentroamerica.github.io/clusterurbano/").rstrip("/")
     ejercicio_url = f"{hub_base}/ejercicio/"
     repo_url = (confirmed_repo_url or f"https://github.com/{canonical_slug}").rstrip("/")
+    effective_repo_url = f"https://github.com/{effective_slug}"
+    gh_logos_dir_url = f"{effective_repo_url}/tree/main/branding/logos"
+    gh_branding_json_url = f"{effective_repo_url}/blob/main/branding/project-branding.json"
+    gh_guide_doc_url = f"{effective_repo_url}/blob/main/docs/identidad-visual.md"
 
     body = f"""
     <div class="callout">
       <strong>Identidad del repositorio de esta iniciativa</strong>
-      <span>{repo_status_note} El identificador <code>{esc(pid)}</code> debe permanecer intacto en <code>project.json</code> incluso cuando trabajes en un fork personal.</span>
+      <span>{repo_status_note} El identificador <code>{esc(pid)}</code> debe permanecer intacto en <code>project.json</code> y en <code>branding/project-branding.json</code> incluso cuando trabajes en un fork personal.</span>
     </div>
 
+    {render_project_institutions_band(ctx, branding, manifest)}
+
+    <section class="section" id="anadir-actualizar-logos">
+      <article class="card" style="border-top:4px solid var(--c-accent-yellow);">
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0.75rem;">
+          <div>
+            <span class="badge badge-lime">Identidad local del proyecto</span>
+            <h2 style="margin:0.35rem 0 0.2rem;color:var(--c-brand-blue);">Añadir o actualizar logos</h2>
+            <p style="margin:0;font-size:0.92rem;color:var(--c-text-muted);">Procedimiento oficial para incorporar el logo del proyecto y los logos de las instituciones participantes en <code>{esc(pid)}</code> sin alterar el tema común.</p>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+            <a class="btn btn-teal btn-xs" href="{html.escape(gh_logos_dir_url, quote=True)}" target="_blank" rel="noopener noreferrer">Abrir carpeta branding/logos/ ↗</a>
+            <a class="btn btn-outline btn-xs" href="{html.escape(gh_branding_json_url, quote=True)}" target="_blank" rel="noopener noreferrer">Editar branding/project-branding.json ↗</a>
+            <a class="btn btn-outline btn-xs" href="{html.escape(gh_guide_doc_url, quote=True)}" target="_blank" rel="noopener noreferrer">Guía docs/identidad-visual.md ↗</a>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-top:0.85rem;">
+          <div>
+            <h3>Pasos para el equipo de la iniciativa</h3>
+            <ol style="padding-left:1.25rem;line-height:1.65;">
+              <li><strong>Abre el repositorio de tu iniciativa:</strong> trabaja sobre tu copia local clonada desde tu fork personal o abre el repositorio en GitHub.</li>
+              <li><strong>Añade el archivo del logo a <code>branding/logos/</code>:</strong> prefiere formato <code>.svg</code> original o <code>.png</code> con fondo transparente (máximo 2 MB), conservando colores y proporciones oficiales.</li>
+              <li><strong>Completa los datos en <code>branding/project-branding.json</code>:</strong> registra el nombre oficial (<code>name</code>), sigla (<code>acronym</code>), rol documentado (<code>role</code>), ruta (<code>logo_path</code>), texto alternativo (<code>alt_text</code>), enlace opcional (<code>url</code> con <code>https://</code>) y orden (<code>order</code>). Si una institución aún no tiene archivo de logo, deja <code>"logo_path": null</code> (nunca inventes logos con IA).</li>
+              <li><strong>Comprueba la vista previa local:</strong> ejecuta <code>python3 scripts/validate.py --source</code> y <code>python3 scripts/build_site.py --output site</code>.</li>
+              <li><strong>Presenta el cambio mediante una rama y un Pull Request:</strong> sube tu rama (por ejemplo, <code>feat/logos-institucionales</code>) y abre el Pull Request hacia <code>{esc(canonical_slug)}</code>.</li>
+              <li><strong>Publicación tras revisión:</strong> al integrarse el PR, el sitio reconstruido de la iniciativa y la ficha del proyecto en el portal regional muestran los logos aprobados.</li>
+            </ol>
+          </div>
+
+          <div>
+            <h3>Prompt para Antigravity (sin editar JSON manualmente)</h3>
+            <p style="font-size:0.88rem;color:var(--c-text-muted);">Coloca tus archivos de imagen en <code>branding/logos/</code> y pega esta instrucción en el chat de Antigravity para que prepare y valide toda la configuración automáticamente:</p>
+            <pre id="prompt-antigravity-logos" class="code-block"><code>{html.escape(antigravity_logo_prompt)}</code></pre>
+            <div style="margin-top:0.65rem;">
+              <button type="button" class="btn btn-primary btn-xs" data-copy-target="prompt-antigravity-logos">Copiar prompt para Antigravity</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:1rem;background:#F8FAFF;" data-logo-preview-helper>
+          <h3 style="margin-top:0;">Previsualizador local de logo y asistente de configuración JSON</h3>
+          <div class="callout callout-warn" style="margin:0.25rem 0 0.85rem;">
+            <strong>Importante sobre el funcionamiento de esta previsualización en el navegador</strong>
+            <ul style="margin:0.35rem 0 0;padding-left:1.2rem;font-size:0.85rem;">
+              <li><strong>Seleccionar y previsualizar un archivo local aquí no significa que ya esté publicado</strong> en el sitio oficial ni en GitHub.</li>
+              <li>Esta herramienta permite comprobar las proporciones del logo en su tarjeta y <strong>descargar o copiar el bloque JSON preparado</strong> para incorporarlo en <code>branding/project-branding.json</code>.</li>
+              <li>La publicación permanente debe seguir siempre el mecanismo de escritura autenticado y revisión del repositorio (commit en rama + Pull Request).</li>
+              <li>Este sitio público es estático y <strong>no contiene ni solicita credenciales de escritura</strong>.</li>
+            </ul>
+          </div>
+
+          <div class="grid-2">
+            <div style="display:flex;flex-direction:column;gap:0.65rem;">
+              <div class="filter-field">
+                <label for="logo-file-inp">1. Seleccionar archivo local (.svg o .png) para previsualizar</label>
+                <input id="logo-file-inp" type="file" accept=".svg,.png,.webp,.jpg,.jpeg,image/svg+xml,image/png" data-logo-file-input>
+              </div>
+              <div class="filter-field">
+                <label for="logo-inst-name">2. Nombre oficial de la institución</label>
+                <input id="logo-inst-name" type="text" placeholder="Ej. Ministerio de Vivienda y Ordenamiento Territorial" value="{esc((manifest['institutional_use'].get('institutions') or ['Institución participante'])[0])}" data-logo-inst-name>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.65rem;">
+                <div class="filter-field">
+                  <label for="logo-inst-acr">Sigla (opcional)</label>
+                  <input id="logo-inst-acr" type="text" placeholder="Ej. MIVIOT" data-logo-inst-acronym>
+                </div>
+                <div class="filter-field">
+                  <label for="logo-inst-ord">Orden de presentación</label>
+                  <input id="logo-inst-ord" type="number" min="1" max="50" value="1" data-logo-inst-order>
+                </div>
+              </div>
+              <div class="filter-field">
+                <label for="logo-inst-role">Rol o agrupación documentada</label>
+                <input id="logo-inst-role" type="text" value="Institución participante del proyecto" data-logo-inst-role>
+              </div>
+              <div class="filter-field">
+                <label for="logo-inst-url">Enlace institucional opcional (https://...)</label>
+                <input id="logo-inst-url" type="url" placeholder="https://..." data-logo-inst-url>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:0.75rem;">
+              <div>
+                <strong style="font-size:0.82rem;color:var(--c-brand-blue);display:block;margin-bottom:0.35rem;">Vista previa local de la tarjeta institucional:</strong>
+                <div class="inst-proyecto-card">
+                  <div class="inst-proyecto-logo-box is-horizontal" data-logo-preview-box>
+                    <img src="{html.escape(ctx.site_url('assets/img/brand/logo-copernicus-lac-chile.png'), quote=True)}" alt="Previsualización local del logo seleccionado" data-logo-preview-img>
+                  </div>
+                  <div>
+                    <div class="inst-proyecto-text-head" style="margin-bottom:0.2rem;">
+                      <span class="inst-proyecto-acronym hidden" data-logo-preview-acronym>SIGLA</span>
+                    </div>
+                    <p class="inst-proyecto-name" data-logo-preview-name>{esc((manifest['institutional_use'].get('institutions') or ['Institución participante'])[0])}</p>
+                    <p class="inst-proyecto-role" data-logo-preview-role>Institución participante del proyecto</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <strong style="font-size:0.82rem;color:var(--c-brand-blue);display:block;margin-bottom:0.35rem;">Entrada generada para <code>branding/project-branding.json</code>:</strong>
+                <pre id="logo-json-snippet" class="code-block" style="margin:0;"><code data-logo-json-output></code></pre>
+                <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.55rem;">
+                  <button type="button" class="btn btn-outline btn-xs" data-copy-target="logo-json-snippet">Copiar bloque JSON</button>
+                  <button type="button" class="btn btn-teal btn-xs" data-logo-download-json>Descargar bloque (.json)</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+
     <section class="section" id="ejercicio-practico">
-      <article class="card" style="border-left:4px solid var(--c-teal);">
+      <article class="card" style="border-left:4px solid var(--c-brand-blue);">
         <span class="badge badge-ok">Ejercicio guiado de extremo a extremo</span>
         <h2>Ejercicio práctico: Mancha Urbana con Sentinel-2 (Google Colab + Google Earth Engine + Antigravity)</h2>
         <p>¿Es tu primera vez contribuyendo al proyecto? En el portal regional dispones de un ejercicio completo paso a paso para clasificar el área construida (<em>built-up</em>) con imágenes <strong>Copernicus Sentinel-2 L2A</strong> y un modelo <strong>Random Forest</strong> entrenado con etiquetas automáticas de edificios y red vial, usando la <strong>misma cuenta de Google</strong> que utilizas en Antigravity:</p>
@@ -1439,6 +1628,31 @@ def main() -> int:
     repo_cfg = json.loads((ROOT / "repo.config.json").read_text(encoding="utf-8"))
     manifest = json.loads((ROOT / "project.json").read_text(encoding="utf-8"))
     layers_cfg = json.loads((ROOT / "geovisor" / "layers.json").read_text(encoding="utf-8"))
+    branding_path = ROOT / "branding" / "project-branding.json"
+    if branding_path.exists():
+        branding = json.loads(branding_path.read_text(encoding="utf-8"))
+    else:
+        branding = {
+            "schema_version": "1.0.0",
+            "project_id": manifest["id"],
+            "theme_version": THEME_VERSION,
+            "updated_at": "2026-11-10",
+            "project_logo": None,
+            "institutions": [
+                {
+                    "id": f"inst-{idx}",
+                    "name": nm,
+                    "acronym": None,
+                    "role": "Institución declarada en el perfil",
+                    "logo_path": None,
+                    "alt_text": f"Institución participante: {nm}",
+                    "url": None,
+                    "order": idx,
+                    "aspect_hint": "auto",
+                }
+                for idx, nm in enumerate(manifest.get("institutional_use", {}).get("institutions", []), start=1)
+            ],
+        }
 
     project_md = (ROOT / "content" / "project.md").read_text(encoding="utf-8")
     metodologia_md = (ROOT / "content" / "metodologia.md").read_text(encoding="utf-8")
@@ -1467,8 +1681,18 @@ def main() -> int:
         shutil.rmtree(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # Copiar recursos estáticos
+    # Copiar recursos estáticos del tema común
     shutil.copytree(ROOT / "web" / "assets", out_dir / "assets")
+
+    # Copiar logos propios de la iniciativa desde branding/logos/ hacia site/branding/logos/
+    logos_src_dir = ROOT / "branding" / "logos"
+    logos_out_dir = out_dir / "branding" / "logos"
+    logos_out_dir.mkdir(parents=True, exist_ok=True)
+    allowed_logo_exts = {".svg", ".png", ".webp", ".jpg", ".jpeg"}
+    if logos_src_dir.exists():
+        for lf in sorted(logos_src_dir.iterdir()):
+            if lf.is_file() and lf.suffix.lower() in allowed_logo_exts:
+                shutil.copy2(lf, logos_out_dir / lf.name)
 
     # Generar proyecto.geolibre.json actualizado y copiar capas públicas si existen
     geolibre_obj = build_geolibre_project_json(layers_cfg, manifest, ctx)
@@ -1535,6 +1759,10 @@ def main() -> int:
         json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
     )
     write_deterministic(
+        out_dir / "data" / "project-branding.json",
+        json.dumps(branding, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+    )
+    write_deterministic(
         out_dir / "data" / "atlas-products.json",
         json.dumps(atlas_products, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
     )
@@ -1542,6 +1770,7 @@ def main() -> int:
         "project_id": manifest["id"],
         "schema_version": manifest["schema_version"],
         "template_version": TEMPLATE_VERSION,
+        "theme_version": THEME_VERSION,
         "repo_kind": repo_cfg.get("repo_kind"),
         "base_path": ctx.base_path,
         "origin": ctx.origin,
@@ -1554,17 +1783,17 @@ def main() -> int:
     )
 
     # Generar páginas HTML estáticas
-    write_deterministic(out_dir / "index.html", build_home_page(ctx, manifest, repo_cfg, layers_cfg))
-    write_deterministic(out_dir / "proyecto" / "index.html", build_proyecto_page(ctx, manifest, repo_cfg, project_md, pmv_md))
-    write_deterministic(out_dir / "aplicacion" / "index.html", build_aplicacion_page(ctx, manifest, repo_cfg, layers_cfg))
-    write_deterministic(out_dir / "metodologia" / "index.html", build_metodologia_page(ctx, manifest, repo_cfg, metodologia_md))
-    write_deterministic(out_dir / "resultados" / "index.html", build_resultados_page(ctx, manifest, repo_cfg, atlas_products, continuidad_md))
-    write_deterministic(out_dir / "colaborar" / "index.html", build_colaborar_page(ctx, manifest, repo_cfg))
+    write_deterministic(out_dir / "index.html", build_home_page(ctx, manifest, repo_cfg, layers_cfg, branding))
+    write_deterministic(out_dir / "proyecto" / "index.html", build_proyecto_page(ctx, manifest, repo_cfg, project_md, pmv_md, branding))
+    write_deterministic(out_dir / "aplicacion" / "index.html", build_aplicacion_page(ctx, manifest, repo_cfg, layers_cfg, branding))
+    write_deterministic(out_dir / "metodologia" / "index.html", build_metodologia_page(ctx, manifest, repo_cfg, metodologia_md, branding))
+    write_deterministic(out_dir / "resultados" / "index.html", build_resultados_page(ctx, manifest, repo_cfg, atlas_products, continuidad_md, branding))
+    write_deterministic(out_dir / "colaborar" / "index.html", build_colaborar_page(ctx, manifest, repo_cfg, branding))
     write_deterministic(out_dir / "404.html", build_404_page(ctx, manifest, repo_cfg))
 
     print(
         f"[OK] Sitio construido para '{manifest['id']}' en {out_dir} "
-        f"(base_path='{ctx.base_path}', modo='{ctx.effective_mode}')."
+        f"(base_path='{ctx.base_path}', modo='{ctx.effective_mode}', tema='{THEME_VERSION}')."
     )
     return 0
 

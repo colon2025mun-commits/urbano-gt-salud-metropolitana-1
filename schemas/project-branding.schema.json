@@ -1,0 +1,179 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://copernicuscentroamerica.github.io/clusterurbano/schemas/project-branding.schema.json",
+  "title": "Configuración de Identidad Visual Local del Proyecto (project-branding.json)",
+  "description": "Define el logo opcional del proyecto y las instituciones participantes con sus logos, textos alternativos, enlaces, roles documentados y orden de presentación, manteniendo intacta la separación frente a los estados de validación.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "project_id",
+    "theme_version",
+    "updated_at",
+    "project_logo",
+    "institutions"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "project_id": {
+      "type": "string",
+      "pattern": "^([a-z]{2}-[a-z0-9-]+|plantilla-demo)$",
+      "description": "Identificador estable de la iniciativa; debe coincidir exactamente con project.json.id."
+    },
+    "theme_version": {
+      "type": "string",
+      "pattern": "^2\\.0\\.0-copernicus-2026$",
+      "description": "Versión del sistema de diseño institucional común aplicado al repositorio."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha ISO (YYYY-MM-DD) de la última actualización de la identidad local."
+    },
+    "notes": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 600
+    },
+    "project_logo": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "logo_path",
+            "alt_text"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 180
+            },
+            "logo_path": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^branding/logos/[A-Za-z0-9_.-]+\\.(svg|png|webp|jpg|jpeg)$"
+            },
+            "alt_text": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 240
+            },
+            "url": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "uri",
+              "pattern": "^https://"
+            },
+            "aspect_hint": {
+              "type": "string",
+              "enum": [
+                "horizontal",
+                "vertical",
+                "square",
+                "auto"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "institutions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "logo_path",
+          "alt_text",
+          "order"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$",
+            "description": "Identificador corto de la institución dentro del proyecto."
+          },
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 200,
+            "description": "Nombre oficial de la institución participante."
+          },
+          "acronym": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 40,
+            "description": "Sigla o acrónimo institucional opcional."
+          },
+          "role": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 160,
+            "description": "Rol o agrupación institucional cuando esté documentado en el perfil o presentación."
+          },
+          "logo_path": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^branding/logos/[A-Za-z0-9_.-]+\\.(svg|png|webp|jpg|jpeg)$",
+            "description": "Ruta relativa dentro de branding/logos/ o null si la institución aún no dispone de archivo de logo."
+          },
+          "alt_text": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 240,
+            "description": "Texto alternativo descriptivo de la marca o nombre institucional."
+          },
+          "url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri",
+            "pattern": "^https://",
+            "description": "Enlace institucional opcional (debe usar HTTPS)."
+          },
+          "order": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "description": "Orden numérico de presentación (1 = primero)."
+          },
+          "aspect_hint": {
+            "type": "string",
+            "enum": [
+              "horizontal",
+              "vertical",
+              "square",
+              "auto"
+            ],
+            "description": "Orientación visual del logo para optimizar su contenedor sin recortes ni deformaciones."
+          }
+        }
+      }
+    }
+  }
+}

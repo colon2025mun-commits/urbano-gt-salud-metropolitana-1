@@ -1,48 +1,67 @@
 /* ==========================================================================
    Comunidad Urbana Copernicus Centroamérica · Sistema de Diseño Institucional
-   Paleta propuesta: #14283F (azul oscuro), #007F8B (turquesa),
-                     #F5F8FA (fondo claro), #C9DA4D (acento lima con texto oscuro)
+   Versión del tema común: 2.0.0-copernicus-2026
+   Referencia principal: PPT PLANTILLA COPERNICUS_2026.pptx
+   Paleta institucional:
+     - Azul institucional principal: #000A62 (--c-brand-blue)
+     - Azul oscuro de portada:       #0C1659 (--c-cover-blue)
+     - Azul de trama cartográfica:   #172070 (--c-mesh-blue)
+     - Amarillo de acento:           #FFC800 (--c-accent-yellow)
+     - Blanco de lectura y bandas:   #FFFFFF (--c-white)
+   Tipografía:
+     - Títulos: Calibri Light / Calibri / alternativas del sistema
+     - Cuerpo:  Calibri / alternativas del sistema
    ========================================================================== */
 
 :root {
-  --c-navy: #14283F;
-  --c-navy-mid: #1E3A5A;
-  --c-navy-soft: #2B4C73;
-  --c-teal: #007F8B;
-  --c-teal-dark: #005F68;
-  --c-teal-light: #E4F4F6;
-  --c-bg: #F5F8FA;
-  --c-surface: #FFFFFF;
-  --c-surface-alt: #EDF2F6;
-  --c-lime: #C9DA4D;
-  --c-lime-soft: #F3F7D4;
-  --c-text: #162434;
-  --c-text-muted: #4A5D70;
-  --c-border: #D5E0EA;
-  --c-border-strong: #B4C6D6;
+  --c-brand-blue: #000A62;
+  --c-cover-blue: #0C1659;
+  --c-mesh-blue: #172070;
+  --c-accent-yellow: #FFC800;
+  --c-accent-yellow-hover: #FFD438;
+  --c-accent-yellow-soft: #FFF8D6;
+  --c-white: #FFFFFF;
 
-  /* Estados semánticos con contraste AA */
+  /* Alias semánticos compatibles con componentes del ecosistema */
+  --c-navy: #000A62;
+  --c-navy-mid: #0C1659;
+  --c-navy-soft: #172070;
+  --c-teal: #172070;
+  --c-teal-dark: #000A62;
+  --c-teal-light: #EEF1FA;
+  --c-bg: #F4F6FB;
+  --c-surface: #FFFFFF;
+  --c-surface-alt: #EBEEF7;
+  --c-lime: #FFC800;
+  --c-lime-soft: #FFF8D6;
+  --c-text: #0F1738;
+  --c-text-muted: #455073;
+  --c-border: #D5DCEE;
+  --c-border-strong: #B0BBE0;
+
+  /* Estados semánticos independientes con contraste AA (separados de la marca) */
   --c-decl-bg: #E6F2FA;
-  --c-decl-fg: #0D4B75;
-  --c-prop-bg: #F3F7D4;
-  --c-prop-fg: #14283F;
-  --c-pend-bg: #F1F4F7;
-  --c-pend-fg: #425466;
+  --c-decl-fg: #0B466E;
+  --c-prop-bg: #FFF6CC;
+  --c-prop-fg: #0C1659;
+  --c-pend-bg: #EFF2F7;
+  --c-pend-fg: #3E4C63;
   --c-ok-bg: #E3F6EC;
-  --c-ok-fg: #0F5C36;
-  --c-warn-bg: #FFF4DF;
-  --c-warn-fg: #7A4B00;
+  --c-ok-fg: #0D5933;
+  --c-warn-bg: #FFF3DC;
+  --c-warn-fg: #734600;
   --c-danger-bg: #FDECEC;
   --c-danger-fg: #8A1C1C;
 
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
-  --shadow-sm: 0 1px 3px rgba(20, 40, 63, 0.07);
-  --shadow-md: 0 6px 18px rgba(20, 40, 63, 0.09);
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --shadow-sm: 0 2px 6px rgba(0, 10, 98, 0.06);
+  --shadow-md: 0 8px 22px rgba(0, 10, 98, 0.10);
+  --font-heading: "Calibri Light", "Calibri", "Carlito", "Segoe UI Variable Display", "Segoe UI", "Poppins", system-ui, -apple-system, sans-serif;
+  --font-sans: "Calibri", "Carlito", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  --max-w: 1220px;
+  --max-w: 1240px;
 }
 
 *, *::before, *::after {
@@ -66,6 +85,12 @@ body {
   overflow-x: hidden;
 }
 
+h1, h2, h3, h4 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
 .container,
 .header-inner,
 .brand,
@@ -78,7 +103,9 @@ body {
 .geovisor-sidebar,
 .geovisor-stage,
 .status-strip,
-.status-cell {
+.status-cell,
+.banda-institucional-regional,
+.banda-instituciones-proyecto {
   min-width: 0;
   max-width: 100%;
   overflow-wrap: break-word;
@@ -93,17 +120,24 @@ pre code {
 }
 
 a {
-  color: var(--c-teal-dark);
+  color: var(--c-brand-blue);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
 a:hover {
-  color: var(--c-navy);
+  color: var(--c-mesh-blue);
 }
 
 :focus-visible {
-  outline: 3px solid var(--c-teal);
+  outline: 3px solid var(--c-accent-yellow);
+  outline-offset: 2px;
+}
+
+main :focus-visible,
+.banda-institucional-regional :focus-visible,
+.banda-instituciones-proyecto :focus-visible {
+  outline: 3px solid var(--c-brand-blue);
   outline-offset: 2px;
 }
 
@@ -111,8 +145,8 @@ a:hover {
   position: absolute;
   left: -9999px;
   top: 0;
-  background: var(--c-lime);
-  color: var(--c-navy);
+  background: var(--c-accent-yellow);
+  color: var(--c-brand-blue);
   font-weight: 700;
   padding: 0.65rem 1rem;
   z-index: 9999;
@@ -132,12 +166,12 @@ a:hover {
 
 /* Franja de vista de trabajo (preview / fork / local) */
 .work-banner {
-  background: var(--c-lime);
-  color: var(--c-navy);
-  font-size: 0.88rem;
-  font-weight: 600;
-  padding: 0.5rem 1rem;
-  border-bottom: 1px solid rgba(20, 40, 63, 0.2);
+  background: var(--c-accent-yellow);
+  color: var(--c-brand-blue);
+  font-size: 0.87rem;
+  font-weight: 700;
+  padding: 0.48rem 1rem;
+  border-bottom: 1px solid rgba(0, 10, 98, 0.22);
 }
 
 .work-banner .container {
@@ -149,31 +183,71 @@ a:hover {
 }
 
 .work-banner a {
-  color: var(--c-navy);
-  font-weight: 700;
+  color: var(--c-brand-blue);
+  font-weight: 800;
 }
 
-/* Barra institucional superior */
+/* ==========================================================================
+   Identidad Institucional Superior (Global Gateway + Unión Europea)
+   ========================================================================== */
 .topbar {
-  background: #0D1B2B;
-  color: #DCE6F0;
-  font-size: 0.83rem;
-  padding: 0.42rem 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--c-cover-blue);
+  color: #E8ECF8;
+  font-size: 0.8rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid rgba(255, 200, 0, 0.25);
 }
 
 .topbar .container {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: 0.65rem;
+}
+
+.topbar-brand-left,
+.topbar-brand-right {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 1080px) {
+  .topbar .container {
+    flex-wrap: wrap;
+  }
+}
+
+.topbar-logo-gg {
+  height: 34px;
+  width: auto;
+  max-width: 150px;
+  object-fit: contain;
+  display: block;
+}
+
+.topbar-logo-eu {
+  height: 30px;
+  width: auto;
+  max-width: 110px;
+  object-fit: contain;
+  display: block;
+}
+
+.topbar-context {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  color: #E8ECF8;
 }
 
 .topbar a {
-  color: #A6EAEE;
+  color: var(--c-accent-yellow);
   text-decoration: none;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .topbar a:hover {
@@ -181,14 +255,38 @@ a:hover {
   color: #FFFFFF;
 }
 
-/* Cabecera y navegación */
+.topbar code {
+  background: rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+  padding: 0.1rem 0.38rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 720px) {
+  .topbar .container {
+    justify-content: center;
+    text-align: center;
+  }
+  .topbar-logo-gg {
+    height: 28px;
+  }
+  .topbar-logo-eu {
+    height: 25px;
+  }
+}
+
+/* ==========================================================================
+   Cabecera Principal y Navegación (#000A62)
+   ========================================================================== */
 .site-header {
-  background: var(--c-navy);
+  background: var(--c-brand-blue);
   color: #FFFFFF;
   position: sticky;
   top: 0;
   z-index: 1000;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.16);
+  box-shadow: 0 3px 12px rgba(0, 10, 98, 0.24);
+  border-bottom: 2px solid var(--c-mesh-blue);
 }
 
 .header-inner {
@@ -196,14 +294,14 @@ a:hover {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.85rem 0;
+  padding: 0.78rem 0;
   flex-wrap: wrap;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.78rem;
   text-decoration: none;
   color: #FFFFFF;
 }
@@ -213,46 +311,50 @@ a:hover {
 }
 
 .brand-mark {
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   border-radius: 8px;
-  background: linear-gradient(135deg, var(--c-teal) 0%, var(--c-lime) 100%);
-  color: var(--c-navy);
+  background: var(--c-accent-yellow);
+  color: var(--c-brand-blue);
+  font-family: var(--font-heading);
   font-weight: 800;
-  font-size: 0.95rem;
+  font-size: 0.98rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .brand-text {
   display: flex;
   flex-direction: column;
-  line-height: 1.2;
+  line-height: 1.22;
 }
 
 .brand-title {
+  font-family: var(--font-heading);
   font-weight: 700;
-  font-size: 1.02rem;
+  font-size: 1.06rem;
   letter-spacing: -0.01em;
+  color: #FFFFFF;
 }
 
 .brand-subtitle {
-  font-size: 0.76rem;
-  color: #B9CDDF;
+  font-size: 0.77rem;
+  color: #C5D0F0;
   margin-top: 2px;
 }
 
 .nav-toggle {
   display: none;
-  background: transparent;
+  background: rgba(255, 255, 255, 0.08);
   color: #FFFFFF;
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 200, 0, 0.55);
   border-radius: var(--radius-sm);
-  padding: 0.45rem 0.75rem;
+  padding: 0.45rem 0.78rem;
   font-size: 0.9rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
 }
 
@@ -268,27 +370,27 @@ a:hover {
 
 .site-nav a {
   display: inline-block;
-  padding: 0.48rem 0.78rem;
-  color: #E6EFF7;
+  padding: 0.48rem 0.82rem;
+  color: #E8ECF8;
   text-decoration: none;
-  font-size: 0.92rem;
-  font-weight: 500;
+  font-size: 0.93rem;
+  font-weight: 600;
   border-radius: var(--radius-sm);
   transition: background 0.15s ease, color 0.15s ease;
 }
 
 .site-nav a:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.12);
   color: #FFFFFF;
 }
 
 .site-nav a[aria-current="page"] {
-  background: var(--c-teal);
-  color: #FFFFFF;
-  font-weight: 600;
+  background: var(--c-accent-yellow);
+  color: var(--c-brand-blue);
+  font-weight: 700;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 900px) {
   .nav-toggle {
     display: inline-flex;
     align-items: center;
@@ -298,7 +400,7 @@ a:hover {
     display: none;
     width: 100%;
     padding-top: 0.5rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
   }
   .site-nav.is-open {
     display: block;
@@ -312,12 +414,62 @@ a:hover {
   }
 }
 
-/* Hero institucional */
+/* ==========================================================================
+   Hero Institucional con Trama Cartográfica (#172070) y Onda de Puntos (#FFC800)
+   ========================================================================== */
 .hero {
-  background: linear-gradient(135deg, var(--c-navy) 0%, var(--c-navy-mid) 62%, #114B5F 100%);
+  position: relative;
+  overflow: hidden;
+  background-color: var(--c-cover-blue);
+  background-image:
+    linear-gradient(125deg, rgba(12, 22, 89, 0.93) 0%, rgba(0, 10, 98, 0.88) 54%, rgba(23, 32, 112, 0.90) 100%),
+    url("../img/brand/bg-trama-cartografica.png");
+  background-size: cover;
+  background-position: center;
   color: #FFFFFF;
-  padding: 2.8rem 0 2.5rem;
-  border-bottom: 4px solid var(--c-teal);
+  padding: 2.75rem 0 2.6rem;
+  border-bottom: 4px solid var(--c-accent-yellow);
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: -6px;
+  width: min(100%, 980px);
+  height: 150px;
+  background-image: url("../img/brand/onda-puntos-amarilla.png");
+  background-repeat: no-repeat;
+  background-position: right bottom;
+  background-size: contain;
+  opacity: 0.52;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hero > .container {
+  position: relative;
+  z-index: 2;
+}
+
+/* Modo compacto para el Geovisor: deja máximo espacio al mapa y controles */
+.hero.hero-compact {
+  padding: 1.15rem 0 1.1rem;
+}
+
+.hero.hero-compact h1 {
+  font-size: clamp(1.3rem, 2.2vw, 1.75rem);
+  margin-bottom: 0.35rem;
+}
+
+.hero.hero-compact .hero-lead {
+  font-size: 0.95rem;
+  margin-bottom: 0;
+}
+
+.hero.hero-compact::after {
+  height: 90px;
+  opacity: 0.38;
 }
 
 .hero-eyebrow {
@@ -329,18 +481,25 @@ a:hover {
 }
 
 .hero h1 {
+  font-family: var(--font-heading);
+  font-weight: 300;
   margin: 0 0 0.85rem;
-  font-size: clamp(1.65rem, 3.2vw, 2.45rem);
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-  max-width: 920px;
+  font-size: clamp(1.75rem, 3.3vw, 2.6rem);
+  line-height: 1.18;
+  letter-spacing: -0.015em;
+  max-width: 940px;
+  color: #FFFFFF;
+}
+
+.hero h1 strong {
+  font-weight: 700;
 }
 
 .hero-lead {
   margin: 0 0 1.4rem;
   font-size: 1.06rem;
-  color: #DDE9F5;
-  max-width: 840px;
+  color: #E2E8F8;
+  max-width: 850px;
 }
 
 .hero-actions {
@@ -350,7 +509,318 @@ a:hover {
   align-items: center;
 }
 
-/* Botones y controles */
+/* ==========================================================================
+   Banda Institucional Regional Común (CCVAH, SISCA, SICA / Coop. Alemana, GIZ, Copernicus LAC)
+   ========================================================================== */
+.banda-institucional-regional {
+  background: #FFFFFF;
+  border-bottom: 1px solid var(--c-border);
+  padding: 0.95rem 0;
+  box-shadow: 0 2px 8px rgba(0, 10, 98, 0.04);
+}
+
+.banda-institucional-regional.is-footer-band {
+  border-top: 2px solid var(--c-border);
+  border-bottom: none;
+  margin-top: 1.5rem;
+}
+
+.banda-regional-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem 2rem;
+}
+
+.banda-regional-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.banda-regional-label {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--c-brand-blue);
+  letter-spacing: 0.01em;
+}
+
+.banda-regional-logos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.15rem 1.65rem;
+}
+
+.banda-regional-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.4rem;
+  background: #FFFFFF;
+  border-radius: var(--radius-sm);
+}
+
+.banda-regional-item img {
+  display: block;
+  width: auto;
+  height: 48px;
+  max-width: 185px;
+  object-fit: contain;
+}
+
+.banda-regional-item.logo-ccvah img {
+  height: 52px;
+}
+
+.banda-regional-item.logo-cooperacion img {
+  height: 54px;
+}
+
+.banda-regional-item.logo-giz img {
+  height: 40px;
+}
+
+.banda-regional-item.logo-copernicus img {
+  height: 40px;
+}
+
+@media (max-width: 768px) {
+  .banda-regional-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .banda-regional-grupo {
+    width: 100%;
+    padding-bottom: 0.65rem;
+    border-bottom: 1px solid var(--c-surface-alt);
+  }
+  .banda-regional-grupo:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+  .banda-regional-logos {
+    gap: 0.9rem 1.25rem;
+  }
+  .banda-regional-item img {
+    height: 42px;
+    max-width: 155px;
+  }
+  .banda-regional-item.logo-ccvah img,
+  .banda-regional-item.logo-cooperacion img {
+    height: 45px;
+  }
+  .banda-regional-item.logo-giz img,
+  .banda-regional-item.logo-copernicus img {
+    height: 34px;
+  }
+}
+
+/* ==========================================================================
+   Zona de Logos Propios de Cada Proyecto («Instituciones participantes del proyecto»)
+   ========================================================================== */
+.banda-instituciones-proyecto {
+  background: #FFFFFF;
+  border: 1px solid var(--c-border);
+  border-top: 4px solid var(--c-brand-blue);
+  border-radius: var(--radius-md);
+  padding: 1.2rem 1.35rem;
+  margin-bottom: 1.85rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.banda-proyecto-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--c-surface-alt);
+}
+
+.banda-proyecto-title-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.banda-proyecto-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.14rem;
+  font-weight: 700;
+  color: var(--c-brand-blue);
+}
+
+.banda-proyecto-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 235px), 1fr));
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.inst-proyecto-card {
+  background: #FFFFFF;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.6rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.inst-proyecto-card:hover {
+  border-color: var(--c-brand-blue);
+  box-shadow: var(--shadow-sm);
+}
+
+.inst-proyecto-card.is-project-emblem {
+  border-left: 4px solid var(--c-accent-yellow);
+  background: #FCFDFF;
+}
+
+.inst-proyecto-logo-box {
+  height: 76px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.65rem;
+  background: #FFFFFF;
+  border-radius: 4px;
+  border: 1px solid #EEF1F8;
+}
+
+.inst-proyecto-logo-box.is-vertical,
+.inst-proyecto-logo-box.is-square {
+  height: 84px;
+}
+
+.inst-proyecto-logo-box img {
+  max-height: 100%;
+  max-width: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* Tarjeta legible cuando la institución no dispone aún de archivo de logo */
+.inst-proyecto-card.is-text-only {
+  background: linear-gradient(180deg, #F8FAFF 0%, #FFFFFF 100%);
+  border-left: 4px solid var(--c-mesh-blue);
+}
+
+.inst-proyecto-text-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.inst-proyecto-acronym {
+  display: inline-block;
+  background: var(--c-brand-blue);
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 0.76rem;
+  padding: 0.16rem 0.55rem;
+  border-radius: 4px;
+  letter-spacing: 0.03em;
+}
+
+.inst-proyecto-name {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.96rem;
+  color: var(--c-brand-blue);
+  line-height: 1.3;
+  margin: 0;
+}
+
+.inst-proyecto-name a {
+  color: var(--c-brand-blue);
+  text-decoration: none;
+}
+
+.inst-proyecto-name a:hover {
+  text-decoration: underline;
+}
+
+.inst-proyecto-role {
+  font-size: 0.78rem;
+  color: var(--c-text-muted);
+  margin: 0;
+}
+
+.inst-proyecto-no-logo-note {
+  font-size: 0.72rem;
+  color: var(--c-text-muted);
+  background: var(--c-surface-alt);
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+/* Tira compacta de institución y logos en tarjetas del catálogo del portal */
+.card-inst-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  padding: 0.5rem 0.68rem;
+  background: #F7F9FE;
+  border: 1px solid #E2E8F5;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+}
+
+.card-inst-strip-text {
+  min-width: 0;
+  flex: 1;
+  color: var(--c-text);
+  line-height: 1.3;
+}
+
+.card-inst-strip-text strong {
+  color: var(--c-brand-blue);
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.card-inst-strip-logos {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.card-inst-strip-logos img {
+  height: 30px;
+  width: auto;
+  max-width: 78px;
+  object-fit: contain;
+  background: #FFFFFF;
+  padding: 2px 4px;
+  border-radius: 4px;
+  border: 1px solid var(--c-border);
+}
+
+/* ==========================================================================
+   Botones y Controles
+   ========================================================================== */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -358,39 +828,52 @@ a:hover {
   gap: 0.45rem;
   padding: 0.62rem 1.15rem;
   border-radius: var(--radius-sm);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.93rem;
   text-decoration: none;
   border: 1px solid transparent;
   cursor: pointer;
   min-height: 42px;
-  transition: transform 0.1s ease, background 0.15s ease;
+  transition: transform 0.1s ease, background 0.15s ease, border-color 0.15s ease;
 }
 
 .btn-primary {
-  background: var(--c-lime);
-  color: var(--c-navy);
+  background: var(--c-accent-yellow);
+  color: var(--c-brand-blue);
+  border-color: var(--c-accent-yellow);
 }
 
 .btn-primary:hover {
-  background: #D6E662;
-  color: var(--c-navy);
+  background: var(--c-accent-yellow-hover);
+  color: var(--c-brand-blue);
 }
 
 .btn-teal {
-  background: var(--c-teal);
+  background: var(--c-brand-blue);
   color: #FFFFFF;
+  border-color: var(--c-brand-blue);
 }
 
 .btn-teal:hover {
-  background: var(--c-teal-dark);
+  background: var(--c-mesh-blue);
+  color: #FFFFFF;
+}
+
+.hero .btn-teal {
+  background: rgba(255, 255, 255, 0.16);
+  color: #FFFFFF;
+  border-color: var(--c-accent-yellow);
+}
+
+.hero .btn-teal:hover {
+  background: rgba(255, 200, 0, 0.24);
   color: #FFFFFF;
 }
 
 .btn-outline-light {
   background: rgba(255, 255, 255, 0.08);
   color: #FFFFFF;
-  border-color: rgba(255, 255, 255, 0.4);
+  border-color: rgba(255, 255, 255, 0.48);
 }
 
 .btn-outline-light:hover {
@@ -400,13 +883,13 @@ a:hover {
 
 .btn-outline {
   background: var(--c-surface);
-  color: var(--c-navy);
+  color: var(--c-brand-blue);
   border-color: var(--c-border-strong);
 }
 
 .btn-outline:hover {
   background: var(--c-surface-alt);
-  color: var(--c-navy);
+  color: var(--c-brand-blue);
 }
 
 .btn-disabled {
@@ -422,7 +905,9 @@ a:hover {
   border: 1px dashed var(--c-border-strong);
 }
 
-/* Secciones y cuadrículas */
+/* ==========================================================================
+   Secciones, Tarjetas y Cuadrículas (Fondos blancos de lectura #FFFFFF)
+   ========================================================================== */
 main {
   flex: 1;
   padding: 2rem 0 3.2rem;
@@ -443,15 +928,15 @@ main {
 
 .section-header h2 {
   margin: 0;
-  font-size: 1.42rem;
-  color: var(--c-navy);
+  font-size: 1.48rem;
+  color: var(--c-brand-blue);
 }
 
 .stats-strip {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 1rem;
-  margin-top: -1.35rem;
+  margin-top: 0.25rem;
   margin-bottom: 2.2rem;
   position: relative;
   z-index: 5;
@@ -460,16 +945,21 @@ main {
 .stat-card {
   background: var(--c-surface);
   border: 1px solid var(--c-border);
-  border-top: 4px solid var(--c-teal);
+  border-top: 4px solid var(--c-brand-blue);
   border-radius: var(--radius-md);
   padding: 1rem 1.2rem;
   box-shadow: var(--shadow-md);
 }
 
+.stat-card:nth-child(even) {
+  border-top-color: var(--c-accent-yellow);
+}
+
 .stat-value {
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: var(--c-navy);
+  font-family: var(--font-heading);
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: var(--c-brand-blue);
   line-height: 1.1;
 }
 
@@ -504,8 +994,8 @@ main {
 
 .card h3 {
   margin: 0;
-  font-size: 1.12rem;
-  color: var(--c-navy);
+  font-size: 1.15rem;
+  color: var(--c-brand-blue);
   line-height: 1.32;
 }
 
@@ -524,12 +1014,14 @@ main {
   gap: 0.6rem;
 }
 
-/* Insignias de estado y procedencia */
+/* ==========================================================================
+   Insignias de Estado y Procedencia (Semántica diferenciada)
+   ========================================================================== */
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 0.32rem;
-  padding: 0.2rem 0.6rem;
+  padding: 0.2rem 0.62rem;
   border-radius: 999px;
   font-size: 0.77rem;
   font-weight: 700;
@@ -538,13 +1030,14 @@ main {
 }
 
 .badge-country {
-  background: var(--c-navy);
+  background: var(--c-brand-blue);
   color: #FFFFFF;
+  border-color: rgba(255, 255, 255, 0.22);
 }
 
 .badge-lime {
-  background: var(--c-lime);
-  color: var(--c-navy);
+  background: var(--c-accent-yellow);
+  color: var(--c-brand-blue);
 }
 
 .badge-declarado {
@@ -556,7 +1049,7 @@ main {
 .badge-propuesta {
   background: var(--c-prop-bg);
   color: var(--c-prop-fg);
-  border-color: #BCCF3B;
+  border-color: #E6C300;
 }
 
 .badge-pendiente {
@@ -583,7 +1076,7 @@ main {
   border-color: #F5B7B7;
 }
 
-/* Matriz de 5 estados independientes */
+/* Matriz de estados independientes */
 .status-strip {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
@@ -592,14 +1085,14 @@ main {
   border: 1px solid var(--c-border);
   border-radius: var(--radius-md);
   padding: 1rem;
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.5rem;
 }
 
 .status-cell {
   padding: 0.55rem 0.75rem;
   background: var(--c-bg);
   border-radius: var(--radius-sm);
-  border-left: 3px solid var(--c-teal);
+  border-left: 3px solid var(--c-brand-blue);
 }
 
 .status-cell-label {
@@ -615,9 +1108,9 @@ main {
 .callout {
   border-radius: var(--radius-md);
   padding: 1rem 1.2rem;
-  border-left: 4px solid var(--c-teal);
+  border-left: 4px solid var(--c-brand-blue);
   background: var(--c-teal-light);
-  color: var(--c-navy);
+  color: var(--c-brand-blue);
   margin: 1rem 0;
 }
 
@@ -628,7 +1121,7 @@ main {
 }
 
 .callout-muted {
-  border-left-color: var(--c-navy-soft);
+  border-left-color: var(--c-mesh-blue);
   background: var(--c-surface-alt);
   color: var(--c-text);
 }
@@ -662,7 +1155,7 @@ main {
 .filter-field label {
   font-size: 0.8rem;
   font-weight: 700;
-  color: var(--c-navy);
+  color: var(--c-brand-blue);
 }
 
 .filter-field input,
@@ -692,7 +1185,7 @@ main {
 }
 
 .prose h1, .prose h2, .prose h3, .prose h4 {
-  color: var(--c-navy);
+  color: var(--c-brand-blue);
   margin-top: 1.5rem;
   margin-bottom: 0.6rem;
   line-height: 1.28;
@@ -712,8 +1205,8 @@ main {
 }
 
 .prose pre, pre.code-block {
-  background: #0F1E30;
-  color: #EDF4FC;
+  background: var(--c-cover-blue);
+  color: #F0F4FF;
   padding: 1rem 1.15rem;
   border-radius: var(--radius-sm);
   overflow-x: auto;
@@ -721,6 +1214,7 @@ main {
   font-size: 0.85rem;
   line-height: 1.55;
   position: relative;
+  border-left: 3px solid var(--c-accent-yellow);
 }
 
 .prose pre code, pre.code-block code {
@@ -753,7 +1247,7 @@ th, td {
 
 th {
   background: var(--c-surface-alt);
-  color: var(--c-navy);
+  color: var(--c-brand-blue);
   font-weight: 700;
   white-space: nowrap;
 }
@@ -784,7 +1278,7 @@ tr:last-child td {
 
 .geovisor-sidebar {
   border-right: 1px solid var(--c-border);
-  background: #FAFCFE;
+  background: #FAFBFF;
   display: flex;
   flex-direction: column;
   max-height: 700px;
@@ -818,9 +1312,9 @@ tr:last-child td {
 }
 
 .geovisor-tab.is-active {
-  color: var(--c-navy);
+  color: var(--c-brand-blue);
   background: var(--c-surface);
-  border-bottom-color: var(--c-teal);
+  border-bottom-color: var(--c-accent-yellow);
 }
 
 .geovisor-panel {
@@ -836,7 +1330,7 @@ tr:last-child td {
   font-size: 0.76rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--c-text-muted);
+  color: var(--c-brand-blue);
   font-weight: 800;
   margin: 0.9rem 0 0.45rem;
 }
@@ -859,7 +1353,7 @@ tr:last-child td {
 .layer-item-title {
   font-size: 0.88rem;
   font-weight: 700;
-  color: var(--c-navy);
+  color: var(--c-brand-blue);
   display: flex;
   align-items: flex-start;
   gap: 0.45rem;
@@ -884,7 +1378,7 @@ tr:last-child td {
 .geovisor-stage {
   position: relative;
   min-height: 540px;
-  background: #E5ECF2;
+  background: #E5E9F4;
   display: flex;
   flex-direction: column;
 }
@@ -896,9 +1390,10 @@ tr:last-child td {
   justify-content: space-between;
   gap: 0.5rem;
   padding: 0.55rem 0.85rem;
-  background: var(--c-navy);
+  background: var(--c-brand-blue);
   color: #FFFFFF;
   font-size: 0.82rem;
+  border-bottom: 2px solid var(--c-accent-yellow);
 }
 
 .geovisor-toolbar-actions {
@@ -931,8 +1426,8 @@ tr:last-child td {
 }
 
 .geovisor-statusbar {
-  background: rgba(20, 40, 63, 0.92);
-  color: #E8F1F8;
+  background: var(--c-cover-blue);
+  color: #E8ECF8;
   font-size: 0.77rem;
   padding: 0.4rem 0.85rem;
   display: flex;
@@ -942,18 +1437,18 @@ tr:last-child td {
 }
 
 .dropzone {
-  border: 2px dashed var(--c-teal);
+  border: 2px dashed var(--c-brand-blue);
   border-radius: var(--radius-md);
   padding: 1rem;
   text-align: center;
   background: var(--c-teal-light);
-  color: var(--c-navy);
+  color: var(--c-brand-blue);
   cursor: pointer;
   margin-bottom: 0.85rem;
 }
 
 .dropzone:hover {
-  background: #D5EEF1;
+  background: #E0E6F8;
 }
 
 /* Mapa regional del Hub */
@@ -968,7 +1463,7 @@ tr:last-child td {
 .hub-map-canvas {
   width: 100%;
   height: 430px;
-  background: #E2ECF3;
+  background: #E2E8F5;
 }
 
 /* Pestañas de Agenda */
@@ -983,42 +1478,51 @@ tr:last-child td {
   padding: 0.55rem 1rem;
   border: 1px solid var(--c-border-strong);
   background: var(--c-surface);
-  color: var(--c-navy);
+  color: var(--c-brand-blue);
   font-weight: 700;
   border-radius: var(--radius-sm);
   cursor: pointer;
 }
 
 .day-tab.is-active {
-  background: var(--c-navy);
-  color: #FFFFFF;
-  border-color: var(--c-navy);
+  background: var(--c-brand-blue);
+  color: var(--c-accent-yellow);
+  border-color: var(--c-brand-blue);
 }
 
-/* Pie de página */
+/* Pie de página institucional */
 .site-footer {
-  background: var(--c-navy);
-  color: #C9D8E6;
-  padding: 2.2rem 0;
+  position: relative;
+  overflow: hidden;
+  background: var(--c-cover-blue);
+  color: #D2DAF2;
+  padding: 2.3rem 0;
   font-size: 0.88rem;
-  border-top: 4px solid var(--c-teal);
+  border-top: 4px solid var(--c-accent-yellow);
 }
 
 .site-footer a {
-  color: #9EE7EC;
+  color: var(--c-accent-yellow);
+}
+
+.site-footer a:hover {
+  color: #FFFFFF;
 }
 
 .footer-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
+  position: relative;
+  z-index: 2;
 }
 
 .footer-title {
+  font-family: var(--font-heading);
   color: #FFFFFF;
   font-weight: 700;
   margin: 0 0 0.55rem;
-  font-size: 0.96rem;
+  font-size: 1rem;
 }
 
 .tag-list {
@@ -1029,7 +1533,7 @@ tr:last-child td {
 
 .tag {
   background: var(--c-surface-alt);
-  color: var(--c-navy);
+  color: var(--c-brand-blue);
   padding: 0.16rem 0.52rem;
   border-radius: 4px;
   font-size: 0.76rem;

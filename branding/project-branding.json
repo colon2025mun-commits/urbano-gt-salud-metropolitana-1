@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0.0",
+  "project_id": "gt-salud-metropolitana",
+  "theme_version": "2.0.0-copernicus-2026",
+  "updated_at": "2026-11-10",
+  "project_logo": null,
+  "institutions": [
+    {
+      "id": "mspas-gt",
+      "name": "Ministerio de Salud Pública y Asistencia Social",
+      "acronym": "MSPAS",
+      "role": "Institución rectora de salud pública y vigilancia ambiental",
+      "url": "https://www.mspas.gob.gt/",
+      "logo_path": null,
+      "alt_text": "Ministerio de Salud Pública y Asistencia Social (MSPAS)",
+      "order": 1,
+      "aspect_hint": "horizontal"
+    },
+    {
+      "id": "insivumeh-gt",
+      "name": "Instituto Nacional de Sismología, Vulcanología, Meteorología e Hidrología",
+      "acronym": "INSIVUMEH",
+      "role": "Monitoreo meteorológico, climático y de calidad del aire",
+      "url": "https://insivumeh.gob.gt/",
+      "logo_path": null,
+      "alt_text": "INSIVUMEH Guatemala",
+      "order": 2,
+      "aspect_hint": "horizontal"
+    },
+    {
+      "id": "mancomunidad-gran-ciudad-sur-gt",
+      "name": "Mancomunidad Gran Ciudad del Sur y Municipios Metropolitanos",
+      "acronym": "AMG / 17 Municipios",
+      "role": "Coordinación intermunicipal en el Área Metropolitana de Guatemala",
+      "url": "https://granciudaddelsur.com/",
+      "logo_path": null,
+      "alt_text": "Mancomunidad Gran Ciudad del Sur y Municipios Metropolitanos",
+      "order": 3,
+      "aspect_hint": "horizontal"
+    }
+  ],
+  "notes": "Las instituciones participantes del Grupo 8 se muestran en formato textual limpio hasta incorporar sus archivos gráficos oficiales en branding/logos/."
+}

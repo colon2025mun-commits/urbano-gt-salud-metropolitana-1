@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-Utilidades comunes de validación, cálculo de base path, identidad canónica vs. preview
-y saneamiento para el Portal Comunitario y los repositorios de iniciativas.
+Utilidades comunes de validación, cálculo de base path, identidad canónica vs. preview,
+sistema de identidad visual institucional (2.0.0-copernicus-2026) y saneamiento
+para el Portal Comunitario y los repositorios de iniciativas.
 """
 from __future__ import annotations
 
@@ -15,7 +16,8 @@ from typing import Any
 
 from jsonschema import FormatChecker
 
-TEMPLATE_VERSION = "1.0.0"
+TEMPLATE_VERSION = "1.1.0"
+THEME_VERSION = "2.0.0-copernicus-2026"
 
 STATUS_LABELS = {
     "declarado": ("Según el perfil", "badge-declarado"),
@@ -164,9 +166,6 @@ def compute_site_context(
         bp = "/"
         origin = (explicit_origin or "").rstrip("/")
 
-    # Regla estricta de 03_GITHUB_PAGES_Y_AUTOMATIZACION.md:
-    # Un sitio solo se identifica como canonical si coincide con el repositorio canónico confirmado
-    # y PAGES_SITE_MODE == 'canonical'.
     is_canonical = (
         bool(canonical_slug)
         and bool(gh_repo)
@@ -230,3 +229,222 @@ def format_spanish_date(val: str | None, fallback: str = "Pendiente de confirmar
         return f"{dy} {m_name} {yr}"
     return s
 
+
+def render_upper_institutional_bar(
+    ctx: SiteContext,
+    left_context_html: str,
+    right_context_html: str,
+) -> str:
+    """
+    Renderiza la identidad institucional superior (Global Gateway a la izquierda
+    y Emblema de la Unión Europea a la derecha) sobre fondo azul oscuro (#0C1659).
+    """
+    gg_src = html.escape(ctx.site_url("assets/img/brand/logo-global-gateway.png"), quote=True)
+    eu_src = html.escape(ctx.site_url("assets/img/brand/logo-union-europea.png"), quote=True)
+    return f"""
+  <div class="topbar" role="region" aria-label="Identidad institucional superior">
+    <div class="container">
+      <div class="topbar-brand-left">
+        <img class="topbar-logo-gg" src="{gg_src}" alt="Global Gateway">
+        <div class="topbar-context">{left_context_html}</div>
+      </div>
+      <div class="topbar-brand-right">
+        <div class="topbar-context">{right_context_html}</div>
+        <img class="topbar-logo-eu" src="{eu_src}" alt="Emblema de la Unión Europea">
+      </div>
+    </div>
+  </div>"""
+
+
+def render_regional_institutional_band(
+    ctx: SiteContext,
+    extra_class: str = "",
+) -> str:
+    """
+    Renderiza la banda institucional regional común sobre fondo blanco (#FFFFFF),
+    conservando exactamente los logos, nombres, orden y agrupaciones de la plantilla
+    PPT PLANTILLA COPERNICUS_2026.pptx:
+      - Implementado por: CCVAH, SISCA, SICA.
+      - Con el apoyo técnico de: Cooperación Alemana, GIZ, Copernicus LAC Chile.
+    """
+    cls_attr = f"banda-institucional-regional {extra_class}".strip()
+    ccvah_src = html.escape(ctx.site_url("assets/img/brand/logo-ccvah.png"), quote=True)
+    sisca_src = html.escape(ctx.site_url("assets/img/brand/logo-sisca.png"), quote=True)
+    sica_src = html.escape(ctx.site_url("assets/img/brand/logo-sica.png"), quote=True)
+    coop_src = html.escape(ctx.site_url("assets/img/brand/logo-cooperacion-alemana.png"), quote=True)
+    giz_src = html.escape(ctx.site_url("assets/img/brand/logo-giz.png"), quote=True)
+    cop_src = html.escape(ctx.site_url("assets/img/brand/logo-copernicus-lac-chile.png"), quote=True)
+
+    return f"""
+  <section class="{cls_attr}" aria-label="Banda institucional regional">
+    <div class="container banda-regional-inner">
+      <div class="banda-regional-grupo">
+        <span class="banda-regional-label">Implementado por:</span>
+        <div class="banda-regional-logos">
+          <span class="banda-regional-item logo-ccvah">
+            <img src="{ccvah_src}" alt="CCVAH — Consejo Centroamericano de Vivienda y Asentamientos Humanos" loading="lazy">
+          </span>
+          <span class="banda-regional-item logo-sisca">
+            <img src="{sisca_src}" alt="SISCA — Secretaría de la Integración Social Centroamericana" loading="lazy">
+          </span>
+          <span class="banda-regional-item logo-sica">
+            <img src="{sica_src}" alt="SICA — Sistema de la Integración Centroamericana" loading="lazy">
+          </span>
+        </div>
+      </div>
+      <div class="banda-regional-grupo">
+        <span class="banda-regional-label">Con el apoyo técnico de:</span>
+        <div class="banda-regional-logos">
+          <span class="banda-regional-item logo-cooperacion">
+            <img src="{coop_src}" alt="Cooperación Alemana — Deutsche Zusammenarbeit" loading="lazy">
+          </span>
+          <span class="banda-regional-item logo-giz">
+            <img src="{giz_src}" alt="GIZ — Deutsche Gesellschaft für Internationale Zusammenarbeit (GIZ) GmbH" loading="lazy">
+          </span>
+          <span class="banda-regional-item logo-copernicus">
+            <img src="{cop_src}" alt="Copernicus LAC Chile" loading="lazy">
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>"""
+
+
+def render_project_institutions_band(
+    ctx: SiteContext,
+    branding: dict[str, Any] | None,
+    manifest: dict[str, Any],
+    colaborar_href: str | None = None,
+    logo_url_prefix: str = "",
+) -> str:
+    """
+    Renderiza la zona «Instituciones participantes del proyecto», diferenciada de la
+    banda regional. Cuando una institución tiene archivo en branding/logos/, muestra el
+    logo respetando sus proporciones (horizontal, vertical o cuadrado); cuando no dispone
+    de logo (logo_path: null), presenta su nombre oficial y rol de forma legible sin
+    inventar ni generar un logo de sustitución.
+    """
+    cards_html: list[str] = []
+
+    if branding and isinstance(branding.get("project_logo"), dict):
+        pl = branding["project_logo"]
+        pl_path = pl.get("logo_path")
+        if pl_path:
+            resolved_pl = ctx.site_url(f"{logo_url_prefix}{pl_path}".lstrip("/"))
+            aspect_cls = f"is-{pl.get('aspect_hint', 'horizontal')}"
+            pl_name = esc(pl.get("name") or manifest.get("title"))
+            pl_alt = esc(pl.get("alt_text") or pl_name)
+            pl_url = pl.get("url")
+            name_node = (
+                f'<a href="{html.escape(pl_url, quote=True)}" target="_blank" rel="noopener noreferrer">{pl_name} ↗</a>'
+                if pl_url and str(pl_url).startswith("https://")
+                else pl_name
+            )
+            cards_html.append(
+                f"""
+                <div class="inst-proyecto-card is-project-emblem">
+                  <div class="inst-proyecto-logo-box {aspect_cls}">
+                    <img src="{html.escape(resolved_pl, quote=True)}" alt="{pl_alt}" loading="lazy">
+                  </div>
+                  <div>
+                    <span class="badge badge-lime" style="margin-bottom:0.25rem;">Marca de la iniciativa</span>
+                    <p class="inst-proyecto-name">{name_node}</p>
+                  </div>
+                </div>
+                """
+            )
+
+    institutions: list[dict[str, Any]] = []
+    if branding and isinstance(branding.get("institutions"), list) and branding["institutions"]:
+        institutions = sorted(
+            branding["institutions"],
+            key=lambda x: (int(x.get("order", 99)), str(x.get("id", ""))),
+        )
+    else:
+        for idx, raw_name in enumerate(manifest.get("institutional_use", {}).get("institutions", []), start=1):
+            institutions.append(
+                {
+                    "id": f"inst-{idx}",
+                    "name": raw_name,
+                    "acronym": None,
+                    "role": "Institución declarada en el perfil",
+                    "logo_path": None,
+                    "alt_text": f"Institución participante: {raw_name}",
+                    "url": None,
+                    "order": idx,
+                    "aspect_hint": "auto",
+                }
+            )
+
+    for inst in institutions:
+        nm = esc(inst.get("name"))
+        acr = inst.get("acronym")
+        role = inst.get("role")
+        lpath = inst.get("logo_path")
+        alt = esc(inst.get("alt_text") or inst.get("name"))
+        url = inst.get("url")
+        aspect = inst.get("aspect_hint") or "horizontal"
+
+        name_html = (
+            f'<a href="{html.escape(url, quote=True)}" target="_blank" rel="noopener noreferrer">{nm} ↗</a>'
+            if url and str(url).startswith("https://")
+            else nm
+        )
+        acr_badge = f'<span class="inst-proyecto-acronym">{esc(acr)}</span>' if acr else ""
+        role_html = f'<p class="inst-proyecto-role">{esc(role)}</p>' if role else ""
+
+        if lpath:
+            resolved_src = ctx.site_url(f"{logo_url_prefix}{lpath}".lstrip("/"))
+            cards_html.append(
+                f"""
+                <div class="inst-proyecto-card">
+                  <div class="inst-proyecto-logo-box is-{html.escape(aspect)}">
+                    <img src="{html.escape(resolved_src, quote=True)}" alt="{alt}" loading="lazy">
+                  </div>
+                  <div>
+                    <div class="inst-proyecto-text-head" style="margin-bottom:0.2rem;">
+                      {acr_badge}
+                    </div>
+                    <p class="inst-proyecto-name">{name_html}</p>
+                    {role_html}
+                  </div>
+                </div>
+                """
+            )
+        else:
+            cards_html.append(
+                f"""
+                <div class="inst-proyecto-card is-text-only">
+                  <div class="inst-proyecto-text-head">
+                    {acr_badge}
+                    <span class="inst-proyecto-no-logo-note">Nombre institucional (logo pendiente en branding/logos/)</span>
+                  </div>
+                  <div>
+                    <p class="inst-proyecto-name">{name_html}</p>
+                    {role_html}
+                  </div>
+                </div>
+                """
+            )
+
+    action_link = ""
+    if colaborar_href:
+        action_link = (
+            f'<a class="btn btn-outline btn-xs" href="{html.escape(colaborar_href, quote=True)}">'
+            f'Añadir o actualizar logos →</a>'
+        )
+
+    return f"""
+    <section class="banda-instituciones-proyecto" aria-label="Instituciones participantes del proyecto">
+      <div class="banda-proyecto-header">
+        <div class="banda-proyecto-title-wrap">
+          <span class="badge badge-country">Identidad local del proyecto</span>
+          <h2 class="banda-proyecto-title">Instituciones participantes del proyecto</h2>
+        </div>
+        {action_link}
+      </div>
+      <div class="banda-proyecto-grid">
+        {"".join(cards_html)}
+      </div>
+    </section>
+    """
