@@ -91,10 +91,10 @@
     "issue_tracker": "https://github.com/copernicuscentroamerica/urbano-gt-salud-metropolitana/issues"
   },
   "governance": {
-    "technical_owner": null,
-    "content_owner": null,
+    "technical_owner": "Andres Barrionuevo",
+    "content_owner": "Andres Barrionuevo",
     "update_frequency": null,
-    "content_updated_at": null
+    "content_updated_at": "2026-11-10"
   },
   "provenance": {
     "sources": [
@@ -175,10 +175,30 @@
           "S23"
         ],
         "note": "Contenido técnico declarado por la fuente; no acredita ejecución ni validación."
+      },
+      {
+        "pointer": "/governance/content_updated_at",
+        "status": "declarado",
+        "source_ids": [],
+        "note": "Fecha de actualización de parámetros metodológicos verificados por el equipo."
+      },
+      {
+        "pointer": "/team",
+        "status": "declarado",
+        "source_ids": [],
+        "note": "Creador y referente técnico del proyecto."
       }
     ]
   },
-  "team": [],
+  "team": [
+    {
+      "name": "Andres Barrionuevo",
+      "role": "Creador del proyecto",
+      "institution": "MSPAS",
+      "github_username": "colon2025mun-commits",
+      "profile_url": "https://github.com/colon2025mun-commits"
+    }
+  ],
   "data_sources": [
     {
       "title": "Sentinel-2 / óptico multiespectral",

@@ -554,6 +554,9 @@ def build_home_page(
           {badge_html(manifest['pmv']['scope_status'], 'Alcance PMV')}
         </div>
         <h1>{esc(manifest['title'])}</h1>
+        <div class="hero-creator">
+          <span class="badge-creator">👤 Creador del proyecto: <strong>Andres Barrionuevo</strong></span>
+        </div>
         <p class="hero-lead">{esc(manifest['summary'])}</p>
         <div class="hero-actions">
           <a class="btn btn-primary" href="{html.escape(ctx.site_url('aplicacion/'), quote=True)}">Abrir Geovisor (GeoLibre)</a>
@@ -735,6 +738,9 @@ def build_proyecto_page(
           <span class="badge badge-country">{esc(manifest['id'])}</span>
         </div>
         <h1>{esc(manifest['title'])}</h1>
+        <div class="hero-creator">
+          <span class="badge-creator">👤 Creador del proyecto: <strong>Andres Barrionuevo</strong></span>
+        </div>
         <p class="hero-lead">Alcance territorial en {esc(manifest['territory']['label'])}, criterios del PMV, instituciones participantes y trazabilidad documental desde <code>project.json</code>.</p>
       </div>
     </section>

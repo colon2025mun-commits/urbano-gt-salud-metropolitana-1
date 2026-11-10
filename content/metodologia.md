@@ -141,3 +141,8 @@ Despliegue digital
 ## Referencias documentales del expediente
 
 - `S23` — `0. Perfiles de Proyectos/Grupo 7_Guatemala_Prevencion riesgos salud/Ficha_07_Guatemala_MSPAS_Prevencion_Riesgos_Salud.docx`.
+
+### Parámetros de corrida verificados
+
+El equipo utilizará un umbral máximo de nubosidad del 20 % y enmascaramiento SCL (clases 4, 5 y 6) sobre Sentinel-2 L2A.
+
