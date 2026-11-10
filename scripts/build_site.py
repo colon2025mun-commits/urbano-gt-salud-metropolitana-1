@@ -1018,8 +1018,8 @@ gh pr create --repo {canonical_slug} --base main --head TU_USUARIO_GITHUB:feat/n
         <h3>Cómo publicar una nueva capa geoespacial del equipo</h3>
         <ol>
           <li>Verifica que la capa tenga CRS <code>EPSG:4326</code> (WGS84), topología limpia, autorización de publicación y ausencia de datos personales o prediales restringidos.</li>
-          <li>Si es un archivo vectorial ligero (ej. <code>.geojson</code>), guárdalo en <code>geovisor/data/</code>. Si es un ráster pesado (COG, XYZ tiles de GEE o WMS/WFS OGC), alójalo en el servicio correspondiente y usa su URL <code>https://</code>.</li>
-          <li>Edita la entrada correspondiente en <code>geovisor/layers.json</code>: coloca la ruta en <code>source_path</code> y cambia <code>status</code> a <code>"en_revision"</code> o <code>"publicado"</code>.</li>
+          <li>Si es un archivo compatible con GeoLibre (<code>.geojson</code>, <code>.kml</code>, <code>.geolibre.json</code>, <code>.pmtiles</code>, <code>.fgb</code>), súbelo a <code>geovisor/capas/</code>: aparecerá de inmediato en la pestaña <strong>Carpeta repo</strong> («Cargar desde carpeta»). Si es un servicio externo pesado (COG/XYZ/WMS), usa su URL <code>https://</code>.</li>
+          <li>Para dejar una capa activa por defecto al abrir el visor, edita <code>geovisor/layers.json</code>: coloca <code>geovisor/capas/tu_capa.geojson</code> en <code>source_path</code> y cambia <code>status</code> a <code>"en_revision"</code> o <code>"publicado"</code>.</li>
           <li>Ejecuta <code>python3 scripts/build_site.py --output site</code>: el generador actualizará automáticamente <code>site/geovisor/proyecto.geolibre.json</code> y activará el control en el Geovisor.</li>
         </ol>
       </article>

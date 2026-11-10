@@ -335,7 +335,8 @@
       style: makeStyle("carto-positron"),
       center: center,
       zoom: zoom,
-      attributionControl: true
+      attributionControl: true,
+      canvasContextAttributes: { preserveDrawingBuffer: true }
     });
 
     mapInstance.addControl(new window.maplibregl.NavigationControl(), "top-right");
@@ -419,7 +420,7 @@
         id: prefixId + "-fill",
         type: "fill",
         source: srcId,
-        filter: ["in", "$type", "Polygon"],
+        filter: ["==", ["geometry-type"], "Polygon"],
         paint: { "fill-color": fillColor, "fill-opacity": fillOpacity }
       });
       mapInstance.addLayer({
@@ -432,7 +433,7 @@
         id: prefixId + "-pt",
         type: "circle",
         source: srcId,
-        filter: ["in", "$type", "Point"],
+        filter: ["==", ["geometry-type"], "Point"],
         paint: {
           "circle-radius": 6,
           "circle-color": fillColor,
@@ -492,11 +493,13 @@
                     combinedBounds[1][0] = Math.max(combinedBounds[1][0], b[1][0]);
                     combinedBounds[1][1] = Math.max(combinedBounds[1][1], b[1][1]);
                   }
-                  mapInstance.fitBounds(combinedBounds, { padding: 42, maxZoom: 15.2, duration: 700 });
+                  mapInstance.fitBounds(combinedBounds, { padding: 42, maxZoom: 15.2, duration: 0 });
                 }
               }
             })
-            .catch(function () {});
+            .catch(function (err) {
+              if (window.console && console.warn) console.warn("Error al cargar capa del geovisor:", lyr.id, err);
+            });
 
           var chk = document.querySelector('[data-layer-toggle="' + lyr.id + '"]');
           if (chk) {
@@ -687,11 +690,14 @@
 
         var titleEl = document.createElement("div");
         titleEl.className = "layer-item-title";
+        titleEl.style.minWidth = "0";
+        titleEl.style.overflowWrap = "anywhere";
         titleEl.textContent = fileObj.name;
 
         var badge = document.createElement("span");
         var fmt = detectFormat(fileObj.name);
         badge.className = "badge badge-declarado";
+        badge.style.flexShrink = "0";
         badge.textContent = fmt.toUpperCase();
 
         head.appendChild(titleEl);
@@ -910,7 +916,8 @@
       style: makeStyle("carto-positron"),
       center: [-82.2, 14.1],
       zoom: 4.35,
-      attributionControl: true
+      attributionControl: true,
+      canvasContextAttributes: { preserveDrawingBuffer: true }
     });
     map.addControl(new window.maplibregl.NavigationControl(), "top-right");
 
