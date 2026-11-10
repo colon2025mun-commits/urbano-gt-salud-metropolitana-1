@@ -136,10 +136,8 @@ def render_shell(
         f"Comunidad Urbana Copernicus Centroamérica · <strong>{esc(country_name)} ({esc(country_code)})</strong> · ID: <code>{esc(pid)}</code>",
     )
 
-    # En el geovisor (/aplicacion/) ubicamos la banda institucional regional debajo del área principal
-    # para dejar máximo espacio vertical al mapa y sus controles.
-    top_regional_band_html = "" if active_nav == "aplicacion" else render_regional_institutional_band(ctx)
-    bottom_regional_band_html = render_regional_institutional_band(ctx, extra_class="is-footer-band") if active_nav == "aplicacion" else ""
+    # La banda institucional regional se ubica al final de todas las páginas, justo encima del pie
+    bottom_regional_band_html = render_regional_institutional_band(ctx, extra_class="is-footer-band")
 
     nav_items = [
         ("inicio", "Inicio", ctx.site_url("")),
@@ -162,7 +160,7 @@ def render_shell(
         )
         maplibre_scripts = (
             '<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" crossorigin="anonymous"></script>\n'
-            f'  <script src="{html.escape(ctx.site_url("assets/js/geovisor.js"), quote=True)}"></script>'
+            f'  <script src="{html.escape(ctx.site_url("assets/js/geovisor.js"), quote=True)}?v=2.0.2"></script>'
         )
 
     updated_raw = manifest["governance"].get("content_updated_at")
@@ -176,7 +174,7 @@ def render_shell(
   <title>{esc(page_title)} · {esc(short_title)}</title>
   <meta name="description" content="{esc(manifest['summary'])}">
   {robots_meta}
-  <link rel="stylesheet" href="{html.escape(ctx.site_url('assets/css/styles.css'), quote=True)}">
+  <link rel="stylesheet" href="{html.escape(ctx.site_url('assets/css/styles.css'), quote=True)}?v=2.0.2">
   {maplibre_head}
 </head>
 <body>
@@ -204,7 +202,6 @@ def render_shell(
   </header>
 
   {hero_html}
-  {top_regional_band_html}
 
   <main id="contenido-principal">
     <div class="container">
@@ -237,7 +234,7 @@ def render_shell(
     </div>
   </footer>
 
-  <script src="{html.escape(ctx.site_url('assets/js/ui.js'), quote=True)}"></script>
+  <script src="{html.escape(ctx.site_url('assets/js/ui.js'), quote=True)}?v=2.0.2"></script>
   {maplibre_scripts}
 </body>
 </html>
@@ -581,8 +578,6 @@ def build_home_page(
     body = f"""
     {render_status_strip(manifest)}
 
-    {render_project_institutions_band(ctx, branding, manifest, colaborar_href=colaborar_logos_href)}
-
     <section class="section">
       <div class="card" style="border-left:4px solid var(--c-brand-blue);">
         <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0.75rem;">
@@ -666,6 +661,8 @@ def build_home_page(
         <ul>{limitations_li}</ul>
       </div>
     </section>
+
+    {render_project_institutions_band(ctx, branding, manifest, colaborar_href=colaborar_logos_href)}
     """
 
     return render_shell(
@@ -746,8 +743,6 @@ def build_proyecto_page(
     body = f"""
     {render_status_strip(manifest)}
 
-    {render_project_institutions_band(ctx, branding, manifest, colaborar_href=colaborar_logos_href)}
-
     <section class="section">
       <div class="card">
         <h3>Gobernanza, coordinación operativa y fechas clave</h3>
@@ -805,6 +800,8 @@ def build_proyecto_page(
         </div>
       </details>
     </section>
+
+    {render_project_institutions_band(ctx, branding, manifest, colaborar_href=colaborar_logos_href)}
     """
 
     return render_shell(
@@ -1367,8 +1364,6 @@ Por favor:
       <span>{repo_status_note} El identificador <code>{esc(pid)}</code> debe permanecer intacto en <code>project.json</code> y en <code>branding/project-branding.json</code> incluso cuando trabajes en un fork personal.</span>
     </div>
 
-    {render_project_institutions_band(ctx, branding, manifest)}
-
     <section class="section" id="anadir-actualizar-logos">
       <article class="card" style="border-top:4px solid var(--c-accent-yellow);">
         <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0.75rem;">
@@ -1452,11 +1447,11 @@ Por favor:
             <div style="display:flex;flex-direction:column;gap:0.75rem;">
               <div>
                 <strong style="font-size:0.82rem;color:var(--c-brand-blue);display:block;margin-bottom:0.35rem;">Vista previa local de la tarjeta institucional:</strong>
-                <div class="inst-proyecto-card">
-                  <div class="inst-proyecto-logo-box is-horizontal" data-logo-preview-box>
-                    <img src="{html.escape(ctx.site_url('assets/img/brand/logo-copernicus-lac-chile.png'), quote=True)}" alt="Previsualización local del logo seleccionado" data-logo-preview-img>
+                <div class="inst-proyecto-card" style="display:flex;align-items:center;gap:0.75rem;padding:0.65rem 0.85rem;background:#F9FAFE;border:1px solid #D5DDF0;border-radius:8px;">
+                  <div class="inst-proyecto-logo-box is-horizontal" data-logo-preview-box style="height:48px;min-width:72px;max-width:130px;display:flex;align-items:center;justify-content:center;padding:0.25rem 0.5rem;background:#FFFFFF;border:1px solid #E4EAF7;border-radius:6px;flex-shrink:0;">
+                    <img src="{html.escape(ctx.site_url('assets/img/brand/logo-copernicus-lac-chile.png'), quote=True)}" alt="Previsualización local del logo seleccionado" height="36" style="max-height:36px;max-width:118px;width:auto;height:auto;object-fit:contain;display:block;" data-logo-preview-img>
                   </div>
-                  <div>
+                  <div style="min-width:0;">
                     <div class="inst-proyecto-text-head" style="margin-bottom:0.2rem;">
                       <span class="inst-proyecto-acronym hidden" data-logo-preview-acronym>SIGLA</span>
                     </div>
@@ -1567,6 +1562,8 @@ Por favor:
         </article>
       </div>
     </section>
+
+    {render_project_institutions_band(ctx, branding, manifest)}
     """
 
     return render_shell(

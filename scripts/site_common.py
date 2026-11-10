@@ -236,21 +236,18 @@ def render_upper_institutional_bar(
     right_context_html: str,
 ) -> str:
     """
-    Renderiza la identidad institucional superior (Global Gateway a la izquierda
-    y Emblema de la Unión Europea a la derecha) sobre fondo azul oscuro (#0C1659).
+    Renderiza la barra superior de contexto sobre fondo azul oscuro (#0C1659).
+    Los logotipos institucionales comunes y propios del proyecto se ubican en el
+    bloque inferior de la página para mantener despejada la cabecera.
     """
-    gg_src = html.escape(ctx.site_url("assets/img/brand/logo-global-gateway.png"), quote=True)
-    eu_src = html.escape(ctx.site_url("assets/img/brand/logo-union-europea.png"), quote=True)
     return f"""
-  <div class="topbar" role="region" aria-label="Identidad institucional superior">
+  <div class="topbar" role="region" aria-label="Contexto institucional superior">
     <div class="container">
       <div class="topbar-brand-left">
-        <img class="topbar-logo-gg" src="{gg_src}" alt="Global Gateway">
         <div class="topbar-context">{left_context_html}</div>
       </div>
       <div class="topbar-brand-right">
         <div class="topbar-context">{right_context_html}</div>
-        <img class="topbar-logo-eu" src="{eu_src}" alt="Emblema de la Unión Europea">
       </div>
     </div>
   </div>"""
@@ -258,16 +255,19 @@ def render_upper_institutional_bar(
 
 def render_regional_institutional_band(
     ctx: SiteContext,
-    extra_class: str = "",
+    extra_class: str = "is-footer-band",
 ) -> str:
     """
-    Renderiza la banda institucional regional común sobre fondo blanco (#FFFFFF),
-    conservando exactamente los logos, nombres, orden y agrupaciones de la plantilla
-    PPT PLANTILLA COPERNICUS_2026.pptx:
+    Renderiza la banda institucional regional común al pie de la página sobre fondo blanco (#FFFFFF),
+    conservando los logos, nombres, orden y agrupaciones de PPT PLANTILLA COPERNICUS_2026.pptx:
+      - Marco Global Gateway y Unión Europea.
       - Implementado por: CCVAH, SISCA, SICA.
       - Con el apoyo técnico de: Cooperación Alemana, GIZ, Copernicus LAC Chile.
+    Incluye atributos HTML e inline styles de respaldo para impedir desconfiguración por caché.
     """
     cls_attr = f"banda-institucional-regional {extra_class}".strip()
+    gg_src = html.escape(ctx.site_url("assets/img/brand/logo-global-gateway.png"), quote=True)
+    eu_src = html.escape(ctx.site_url("assets/img/brand/logo-union-europea.png"), quote=True)
     ccvah_src = html.escape(ctx.site_url("assets/img/brand/logo-ccvah.png"), quote=True)
     sisca_src = html.escape(ctx.site_url("assets/img/brand/logo-sisca.png"), quote=True)
     sica_src = html.escape(ctx.site_url("assets/img/brand/logo-sica.png"), quote=True)
@@ -276,33 +276,44 @@ def render_regional_institutional_band(
     cop_src = html.escape(ctx.site_url("assets/img/brand/logo-copernicus-lac-chile.png"), quote=True)
 
     return f"""
-  <section class="{cls_attr}" aria-label="Banda institucional regional">
-    <div class="container banda-regional-inner">
-      <div class="banda-regional-grupo">
-        <span class="banda-regional-label">Implementado por:</span>
-        <div class="banda-regional-logos">
-          <span class="banda-regional-item logo-ccvah">
-            <img src="{ccvah_src}" alt="CCVAH — Consejo Centroamericano de Vivienda y Asentamientos Humanos" loading="lazy">
+  <section class="{cls_attr}" aria-label="Banda institucional regional" style="background:#FFFFFF;border-top:3px solid #FFC800;border-bottom:1px solid #D5DDF0;padding:1.1rem 0;">
+    <div class="container banda-regional-inner" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1.25rem 2rem;">
+      <div class="banda-regional-grupo" style="display:flex;flex-direction:column;gap:0.4rem;">
+        <span class="banda-regional-label" style="font-size:0.75rem;font-weight:700;color:#000A62;text-transform:uppercase;letter-spacing:0.03em;">Iniciativa Global Gateway · Unión Europea:</span>
+        <div class="banda-regional-logos" style="display:flex;flex-wrap:wrap;align-items:center;gap:0.85rem;">
+          <span class="banda-regional-item logo-gg-pill" style="display:inline-flex;align-items:center;justify-content:center;background:#0C1659;padding:0.35rem 0.65rem;border-radius:6px;">
+            <img src="{gg_src}" alt="Global Gateway" height="28" style="height:28px;width:auto;max-width:110px;object-fit:contain;display:block;" loading="lazy">
           </span>
-          <span class="banda-regional-item logo-sisca">
-            <img src="{sisca_src}" alt="SISCA — Secretaría de la Integración Social Centroamericana" loading="lazy">
-          </span>
-          <span class="banda-regional-item logo-sica">
-            <img src="{sica_src}" alt="SICA — Sistema de la Integración Centroamericana" loading="lazy">
+          <span class="banda-regional-item logo-eu" style="display:inline-flex;align-items:center;justify-content:center;">
+            <img src="{eu_src}" alt="Emblema de la Unión Europea" height="32" style="height:32px;width:auto;max-width:90px;object-fit:contain;display:block;" loading="lazy">
           </span>
         </div>
       </div>
-      <div class="banda-regional-grupo">
-        <span class="banda-regional-label">Con el apoyo técnico de:</span>
-        <div class="banda-regional-logos">
-          <span class="banda-regional-item logo-cooperacion">
-            <img src="{coop_src}" alt="Cooperación Alemana — Deutsche Zusammenarbeit" loading="lazy">
+      <div class="banda-regional-grupo" style="display:flex;flex-direction:column;gap:0.4rem;">
+        <span class="banda-regional-label" style="font-size:0.75rem;font-weight:700;color:#000A62;text-transform:uppercase;letter-spacing:0.03em;">Implementado por:</span>
+        <div class="banda-regional-logos" style="display:flex;flex-wrap:wrap;align-items:center;gap:1.1rem;">
+          <span class="banda-regional-item logo-ccvah" style="display:inline-flex;align-items:center;justify-content:center;">
+            <img src="{ccvah_src}" alt="CCVAH — Consejo Centroamericano de Vivienda y Asentamientos Humanos" height="38" style="height:38px;width:auto;max-width:90px;object-fit:contain;display:block;" loading="lazy">
           </span>
-          <span class="banda-regional-item logo-giz">
-            <img src="{giz_src}" alt="GIZ — Deutsche Gesellschaft für Internationale Zusammenarbeit (GIZ) GmbH" loading="lazy">
+          <span class="banda-regional-item logo-sisca" style="display:inline-flex;align-items:center;justify-content:center;">
+            <img src="{sisca_src}" alt="SISCA — Secretaría de la Integración Social Centroamericana" height="36" style="height:36px;width:auto;max-width:115px;object-fit:contain;display:block;" loading="lazy">
           </span>
-          <span class="banda-regional-item logo-copernicus">
-            <img src="{cop_src}" alt="Copernicus LAC Chile" loading="lazy">
+          <span class="banda-regional-item logo-sica" style="display:inline-flex;align-items:center;justify-content:center;">
+            <img src="{sica_src}" alt="SICA — Sistema de la Integración Centroamericana" height="36" style="height:36px;width:auto;max-width:115px;object-fit:contain;display:block;" loading="lazy">
+          </span>
+        </div>
+      </div>
+      <div class="banda-regional-grupo" style="display:flex;flex-direction:column;gap:0.4rem;">
+        <span class="banda-regional-label" style="font-size:0.75rem;font-weight:700;color:#000A62;text-transform:uppercase;letter-spacing:0.03em;">Con el apoyo técnico de:</span>
+        <div class="banda-regional-logos" style="display:flex;flex-wrap:wrap;align-items:center;gap:1.1rem;">
+          <span class="banda-regional-item logo-cooperacion" style="display:inline-flex;align-items:center;justify-content:center;">
+            <img src="{coop_src}" alt="Cooperación Alemana — Deutsche Zusammenarbeit" height="38" style="height:38px;width:auto;max-width:115px;object-fit:contain;display:block;" loading="lazy">
+          </span>
+          <span class="banda-regional-item logo-giz" style="display:inline-flex;align-items:center;justify-content:center;">
+            <img src="{giz_src}" alt="GIZ — Deutsche Gesellschaft für Internationale Zusammenarbeit (GIZ) GmbH" height="30" style="height:30px;width:auto;max-width:115px;object-fit:contain;display:block;" loading="lazy">
+          </span>
+          <span class="banda-regional-item logo-copernicus" style="display:inline-flex;align-items:center;justify-content:center;">
+            <img src="{cop_src}" alt="Copernicus LAC Chile" height="32" style="height:32px;width:auto;max-width:120px;object-fit:contain;display:block;" loading="lazy">
           </span>
         </div>
       </div>
@@ -318,11 +329,9 @@ def render_project_institutions_band(
     logo_url_prefix: str = "",
 ) -> str:
     """
-    Renderiza la zona «Instituciones participantes del proyecto», diferenciada de la
-    banda regional. Cuando una institución tiene archivo en branding/logos/, muestra el
-    logo respetando sus proporciones (horizontal, vertical o cuadrado); cuando no dispone
-    de logo (logo_path: null), presenta su nombre oficial y rol de forma legible sin
-    inventar ni generar un logo de sustitución.
+    Renderiza la zona «Instituciones participantes del proyecto» al final de la página,
+    diferenciada de la banda regional común. Incluye estilos inline de respaldo para
+    garantizar proporciones compactas y legibles en cualquier navegador.
     """
     cards_html: list[str] = []
 
@@ -342,13 +351,13 @@ def render_project_institutions_band(
             )
             cards_html.append(
                 f"""
-                <div class="inst-proyecto-card is-project-emblem">
-                  <div class="inst-proyecto-logo-box {aspect_cls}">
-                    <img src="{html.escape(resolved_pl, quote=True)}" alt="{pl_alt}" loading="lazy">
+                <div class="inst-proyecto-card is-project-emblem" style="display:flex;align-items:center;gap:0.75rem;padding:0.65rem 0.85rem;background:#F9FAFE;border:1px solid #D5DDF0;border-radius:8px;">
+                  <div class="inst-proyecto-logo-box {aspect_cls}" style="height:48px;min-width:72px;max-width:130px;display:flex;align-items:center;justify-content:center;padding:0.25rem 0.5rem;background:#FFFFFF;border:1px solid #E4EAF7;border-radius:6px;flex-shrink:0;">
+                    <img src="{html.escape(resolved_pl, quote=True)}" alt="{pl_alt}" height="38" style="max-height:38px;max-width:118px;width:auto;height:auto;object-fit:contain;display:block;" loading="lazy">
                   </div>
-                  <div>
-                    <span class="badge badge-lime" style="margin-bottom:0.25rem;">Marca de la iniciativa</span>
-                    <p class="inst-proyecto-name">{name_node}</p>
+                  <div style="min-width:0;">
+                    <span class="badge badge-lime" style="margin-bottom:0.2rem;font-size:0.7rem;">Marca de la iniciativa</span>
+                    <p class="inst-proyecto-name" style="margin:0;font-size:0.86rem;font-weight:700;color:#000A62;">{name_node}</p>
                   </div>
                 </div>
                 """
@@ -390,22 +399,22 @@ def render_project_institutions_band(
             if url and str(url).startswith("https://")
             else nm
         )
-        acr_badge = f'<span class="inst-proyecto-acronym">{esc(acr)}</span>' if acr else ""
-        role_html = f'<p class="inst-proyecto-role">{esc(role)}</p>' if role else ""
+        acr_badge = f'<span class="inst-proyecto-acronym" style="display:inline-block;background:#000A62;color:#FFFFFF;font-size:0.7rem;font-weight:700;padding:0.1rem 0.45rem;border-radius:4px;">{esc(acr)}</span>' if acr else ""
+        role_html = f'<p class="inst-proyecto-role" style="margin:0.15rem 0 0;font-size:0.76rem;color:#3B4668;">{esc(role)}</p>' if role else ""
 
         if lpath:
             resolved_src = ctx.site_url(f"{logo_url_prefix}{lpath}".lstrip("/"))
             cards_html.append(
                 f"""
-                <div class="inst-proyecto-card">
-                  <div class="inst-proyecto-logo-box is-{html.escape(aspect)}">
-                    <img src="{html.escape(resolved_src, quote=True)}" alt="{alt}" loading="lazy">
+                <div class="inst-proyecto-card" style="display:flex;align-items:center;gap:0.75rem;padding:0.65rem 0.85rem;background:#F9FAFE;border:1px solid #D5DDF0;border-radius:8px;">
+                  <div class="inst-proyecto-logo-box is-{html.escape(aspect)}" style="height:48px;min-width:72px;max-width:130px;display:flex;align-items:center;justify-content:center;padding:0.25rem 0.5rem;background:#FFFFFF;border:1px solid #E4EAF7;border-radius:6px;flex-shrink:0;">
+                    <img src="{html.escape(resolved_src, quote=True)}" alt="{alt}" height="38" style="max-height:38px;max-width:118px;width:auto;height:auto;object-fit:contain;display:block;" loading="lazy">
                   </div>
-                  <div>
-                    <div class="inst-proyecto-text-head" style="margin-bottom:0.2rem;">
+                  <div style="min-width:0;">
+                    <div class="inst-proyecto-text-head" style="margin-bottom:0.15rem;">
                       {acr_badge}
                     </div>
-                    <p class="inst-proyecto-name">{name_html}</p>
+                    <p class="inst-proyecto-name" style="margin:0;font-size:0.85rem;font-weight:700;color:#000A62;line-height:1.25;">{name_html}</p>
                     {role_html}
                   </div>
                 </div>
@@ -414,13 +423,13 @@ def render_project_institutions_band(
         else:
             cards_html.append(
                 f"""
-                <div class="inst-proyecto-card is-text-only">
-                  <div class="inst-proyecto-text-head">
+                <div class="inst-proyecto-card is-text-only" style="display:flex;flex-direction:column;justify-content:center;padding:0.65rem 0.85rem;background:#F9FAFE;border:1px solid #D5DDF0;border-left:4px solid #000A62;border-radius:8px;">
+                  <div class="inst-proyecto-text-head" style="display:flex;flex-wrap:wrap;align-items:center;gap:0.35rem;margin-bottom:0.2rem;">
                     {acr_badge}
-                    <span class="inst-proyecto-no-logo-note">Nombre institucional (logo pendiente en branding/logos/)</span>
+                    <span class="inst-proyecto-no-logo-note" style="font-size:0.7rem;color:#52607A;background:#EEF2FA;padding:0.08rem 0.4rem;border-radius:4px;">Institución participante</span>
                   </div>
                   <div>
-                    <p class="inst-proyecto-name">{name_html}</p>
+                    <p class="inst-proyecto-name" style="margin:0;font-size:0.85rem;font-weight:700;color:#000A62;line-height:1.25;">{name_html}</p>
                     {role_html}
                   </div>
                 </div>
@@ -435,15 +444,15 @@ def render_project_institutions_band(
         )
 
     return f"""
-    <section class="banda-instituciones-proyecto" aria-label="Instituciones participantes del proyecto">
-      <div class="banda-proyecto-header">
-        <div class="banda-proyecto-title-wrap">
+    <section id="instituciones-participantes" class="banda-instituciones-proyecto" aria-label="Instituciones participantes del proyecto" style="background:#FFFFFF;border:1px solid #D5DDF0;border-top:3px solid #000A62;border-radius:10px;padding:1rem 1.15rem;margin:1.5rem 0 0.5rem;">
+      <div class="banda-proyecto-header" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.65rem;margin-bottom:0.8rem;padding-bottom:0.55rem;border-bottom:1px solid #E4EAF7;">
+        <div class="banda-proyecto-title-wrap" style="display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem;">
           <span class="badge badge-country">Identidad local del proyecto</span>
-          <h2 class="banda-proyecto-title">Instituciones participantes del proyecto</h2>
+          <h2 class="banda-proyecto-title" style="margin:0;font-size:1.02rem;color:#000A62;">Instituciones participantes del proyecto</h2>
         </div>
         {action_link}
       </div>
-      <div class="banda-proyecto-grid">
+      <div class="banda-proyecto-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0.75rem;align-items:stretch;">
         {"".join(cards_html)}
       </div>
     </section>
