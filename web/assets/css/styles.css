@@ -633,7 +633,7 @@ main {
   color: var(--c-text);
 }
 
-.callout strong {
+.callout > strong {
   display: block;
   margin-bottom: 0.25rem;
 }
