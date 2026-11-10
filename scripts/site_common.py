@@ -196,3 +196,37 @@ def esc(val: object, fallback: str = "Pendiente de confirmar") -> str:
     if val is None or val == "":
         return html.escape(fallback)
     return html.escape(str(val))
+
+
+SPANISH_MONTHS_SHORT = {
+    1: "ene",
+    2: "feb",
+    3: "mar",
+    4: "abr",
+    5: "may",
+    6: "jun",
+    7: "jul",
+    8: "ago",
+    9: "sep",
+    10: "oct",
+    11: "nov",
+    12: "dic",
+}
+
+
+def format_spanish_date(val: str | None, fallback: str = "Pendiente de confirmar") -> str:
+    if not val or not isinstance(val, str):
+        return fallback
+    s = val.strip()
+    m_dt = re.match(r"^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})", s)
+    if m_dt:
+        yr, mo, dy, hh, mm = int(m_dt.group(1)), int(m_dt.group(2)), int(m_dt.group(3)), m_dt.group(4), m_dt.group(5)
+        m_name = SPANISH_MONTHS_SHORT.get(mo, str(mo))
+        return f"{dy} {m_name} {yr} · {hh}:{mm} UTC"
+    m_d = re.match(r"^(\d{4})-(\d{2})-(\d{2})$", s)
+    if m_d:
+        yr, mo, dy = int(m_d.group(1)), int(m_d.group(2)), int(m_d.group(3))
+        m_name = SPANISH_MONTHS_SHORT.get(mo, str(mo))
+        return f"{dy} {m_name} {yr}"
+    return s
+

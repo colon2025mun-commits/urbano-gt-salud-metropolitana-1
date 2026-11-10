@@ -61,7 +61,7 @@
       "geometry_type": "polygon",
       "status": "en_preparacion",
       "source_path": null,
-      "expected_file_hint": "geovisor/data/gt_salud_expansion.geojson",
+      "expected_file_hint": "geovisor/capas/gt_salud_expansion.geojson",
       "resolution": "10 m (Sentinel-2)",
       "style": {
         "fill_color": "#007F8B",
@@ -98,7 +98,7 @@
       "geometry_type": "polygon",
       "status": "en_preparacion",
       "source_path": null,
-      "expected_file_hint": "geovisor/data/gt_salud_indicadores_agregados.geojson",
+      "expected_file_hint": "geovisor/capas/gt_salud_indicadores_agregados.geojson",
       "resolution": "Agregación municipal / sectorial pública",
       "style": {
         "fill_color": "#f46d43",

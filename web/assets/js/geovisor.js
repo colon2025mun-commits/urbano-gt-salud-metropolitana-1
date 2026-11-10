@@ -229,6 +229,64 @@
     return (bytes / (1024 * 1024)).toFixed(2) + " MB";
   }
 
+  function isWebGLSupported() {
+    try {
+      var testCanvas = document.createElement("canvas");
+      return !!(
+        window.WebGLRenderingContext &&
+        (testCanvas.getContext("webgl2") || testCanvas.getContext("webgl") || testCanvas.getContext("experimental-webgl"))
+      );
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function renderProjectWebGLFallback(canvas, cfg, baseUrl, geolibreResolvedUrl) {
+    canvas.innerHTML = "";
+    var box = document.createElement("div");
+    box.className = "callout callout-warn";
+    box.style.margin = "1.25rem";
+    var center = (cfg.map_view && cfg.map_view.center) || [-84.0, 13.5];
+    var h = document.createElement("strong");
+    h.textContent = " aceleración gráfica WebGL no disponible en esta sesión del navegador";
+    box.appendChild(h);
+    var p = document.createElement("p");
+    p.style.margin = "0.5rem 0";
+    p.textContent =
+      "El lienzo interactivo 2D/3D requiere WebGL habilitado. Aun sin aceleración gráfica, puedes consultar y descargar todas las capas activas del proyecto o abrir el archivo de proyecto GeoLibre:";
+    box.appendChild(p);
+    var meta = document.createElement("p");
+    meta.style.fontSize = "0.85rem";
+    meta.textContent =
+      "Centroide referencial: Lat " + Number(center[1]).toFixed(4) + ", Lon " + Number(center[0]).toFixed(4) +
+      " · Escala: " + ((cfg.map_view && cfg.map_view.scale_label) || "Documentada en ficha");
+    box.appendChild(meta);
+
+    var ul = document.createElement("ul");
+    ul.style.margin = "0.5rem 0 0.75rem 1.2rem";
+    (cfg.layers || []).forEach(function (lyr) {
+      if (!lyr.source_path) return;
+      var li = document.createElement("li");
+      var a = document.createElement("a");
+      a.href = /^https?:\/\//i.test(lyr.source_path)
+        ? lyr.source_path
+        : new URL(lyr.source_path, window.location.origin + baseUrl).href;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.textContent = lyr.title + " (" + (lyr.format || "geojson") + ") ↗";
+      li.appendChild(a);
+      ul.appendChild(li);
+    });
+    box.appendChild(ul);
+
+    var btn = document.createElement("a");
+    btn.className = "btn btn-teal btn-xs";
+    btn.href = geolibreResolvedUrl;
+    btn.textContent = "Descargar proyecto.geolibre.json";
+    box.appendChild(btn);
+    canvas.appendChild(box);
+  }
+
   // =========================================================================
   // A. Inicializador del Geovisor de Proyecto (aplicacion/index.html)
   // =========================================================================
@@ -250,14 +308,19 @@
     var geolibreRelPath = (cfg.geolibre_integration && cfg.geolibre_integration.project_file) || "geovisor/proyecto.geolibre.json";
     var geolibreResolvedUrl = new URL(geolibreRelPath, window.location.origin + baseUrl).href;
     var isHttpsPublic = window.location.protocol === "https:";
+    var isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
 
-    // Si estamos en <owner>.github.io/<repo>/ y no vino repoSlug, inferirlo para consultar la carpeta del fork o canónico actual
-    if (!repoSlug && window.location.hostname.endsWith(".github.io")) {
+    // Aislamiento estricto para forks y vistas previas:
+    // Si estamos en <owner>.github.io/<repo>/, usar siempre <owner>/<repo> de la URL actual.
+    // Si estamos en localhost, no consultar la API del repositorio canónico remoto para no mezclar capas.
+    if (window.location.hostname.endsWith(".github.io")) {
       var hostOwner = window.location.hostname.replace(/\.github\.io$/i, "");
       var pathSeg = window.location.pathname.split("/").filter(Boolean)[0];
       if (hostOwner && pathSeg) {
         repoSlug = hostOwner + "/" + pathSeg;
       }
+    } else if (isLocalhost) {
+      repoSlug = null;
     }
 
     var studioBtn = document.getElementById("btn-open-geolibre-studio");
@@ -266,6 +329,8 @@
         ? "https://web.geolibre.app/?url=" + encodeURIComponent(geolibreResolvedUrl)
         : "https://web.geolibre.app/";
     }
+
+    var mapInstance = null;
 
     // Pestañas del panel lateral + acceso rápido desde barra superior
     var tabs = Array.prototype.slice.call(document.querySelectorAll("[data-gv-tab]"));
@@ -289,12 +354,12 @@
           if (iframeEl.getAttribute("src") !== embedSrc) {
             iframeEl.setAttribute("src", embedSrc);
           }
-          if (embedNoticeEl) embedNoticeEl.textContent = "Cargando proyecto .geolibre.json publicado con CORS sobre GeoLibre Web.";
+          if (embedNoticeEl) embedNoticeEl.textContent = "Cargando proyecto .geolibre.json (v0.2.0) publicado con CORS sobre GeoLibre Studio.";
         } else {
           canvas.style.display = "block";
           if (iframeEl) iframeEl.style.display = "none";
           if (embedNoticeEl) {
-            embedNoticeEl.textContent = "En modo local (" + window.location.host + "), usa el visor integrado o descarga proyecto.geolibre.json para abrirlo en web.geolibre.app. Al publicarse en HTTPS (GitHub Pages), el modo embebido se activa automáticamente.";
+            embedNoticeEl.textContent = "En modo local (" + window.location.host + "), usa el visor integrado o descarga proyecto.geolibre.json para abrirlo en web.geolibre.app. Al publicarse en HTTPS (GitHub Pages), la apertura directa con ?url= se activa automáticamente.";
           }
         }
       } else {
@@ -318,66 +383,68 @@
       });
     }
 
-    if (typeof window.maplibregl === "undefined") {
-      var fallback = document.createElement("div");
-      fallback.className = "callout callout-warn";
-      fallback.style.margin = "1rem";
-      fallback.textContent = "No se pudo cargar la librería MapLibre GL JS. El catálogo de capas y la carpeta geovisor/capas/ siguen disponibles.";
-      canvas.appendChild(fallback);
-      return;
-    }
-
     var center = (cfg.map_view && cfg.map_view.center) || [-84.0, 13.5];
     var zoom = (cfg.map_view && cfg.map_view.zoom) || 10;
 
-    var mapInstance = new window.maplibregl.Map({
-      container: canvas,
-      style: makeStyle("carto-positron"),
-      center: center,
-      zoom: zoom,
-      attributionControl: true,
-      canvasContextAttributes: { preserveDrawingBuffer: true }
-    });
-
-    mapInstance.addControl(new window.maplibregl.NavigationControl(), "top-right");
-    mapInstance.addControl(new window.maplibregl.ScaleControl({ maxWidth: 120, unit: "metric" }), "bottom-right");
-
-    // Marcador de centroide referencial
-    var refCentroid = (cfg.map_view && cfg.map_view.declared_centroid) || center;
-    var popupNode = createSafePopupElement(
-      cfg.title || cfg.project_id,
-      [
-        ["Coordenada referencial", refCentroid[1].toFixed(5) + ", " + refCentroid[0].toFixed(5)],
-        ["Escala", (cfg.map_view && cfg.map_view.scale_label) || "Documentada en ficha"],
-        ["Nota", (cfg.map_view && cfg.map_view.reference_note) || "Ubicación referencial"]
-      ],
-      "PUNTO DE REFERENCIA DEL PERFIL"
-    );
-    var refMarker = new window.maplibregl.Marker({ color: "#007F8B" })
-      .setLngLat(refCentroid)
-      .setPopup(new window.maplibregl.Popup({ offset: 24 }).setDOMContent(popupNode))
-      .addTo(mapInstance);
-
-    var toggleRefCheck = document.getElementById("gv-toggle-ref-marker");
-    if (toggleRefCheck) {
-      toggleRefCheck.addEventListener("change", function () {
-        if (toggleRefCheck.checked) refMarker.addTo(mapInstance);
-        else refMarker.remove();
-      });
+    if (typeof window.maplibregl === "undefined" || !isWebGLSupported()) {
+      renderProjectWebGLFallback(canvas, cfg, baseUrl, geolibreResolvedUrl);
+    } else {
+      try {
+        mapInstance = new window.maplibregl.Map({
+          container: canvas,
+          style: makeStyle("carto-positron"),
+          center: center,
+          zoom: zoom,
+          attributionControl: true,
+          canvasContextAttributes: { preserveDrawingBuffer: true }
+        });
+      } catch (err) {
+        mapInstance = null;
+        renderProjectWebGLFallback(canvas, cfg, baseUrl, geolibreResolvedUrl);
+      }
     }
 
-    var coordsStatus = document.getElementById("gv-coords-readout");
-    mapInstance.on("mousemove", function (e) {
-      if (coordsStatus) {
-        coordsStatus.textContent = "Lat: " + e.lngLat.lat.toFixed(5) + " · Lon: " + e.lngLat.lng.toFixed(5) + " · Zoom: " + mapInstance.getZoom().toFixed(1);
-      }
-    });
+    if (mapInstance) {
+      mapInstance.addControl(new window.maplibregl.NavigationControl(), "top-right");
+      mapInstance.addControl(new window.maplibregl.ScaleControl({ maxWidth: 120, unit: "metric" }), "bottom-right");
 
-    var resetViewBtn = document.getElementById("gv-reset-view");
-    if (resetViewBtn) {
-      resetViewBtn.addEventListener("click", function () {
-        mapInstance.flyTo({ center: center, zoom: zoom, essential: true });
+      // Marcador de centroide referencial
+      var refCentroid = (cfg.map_view && cfg.map_view.declared_centroid) || center;
+      var popupNode = createSafePopupElement(
+        cfg.title || cfg.project_id,
+        [
+          ["Coordenada referencial", refCentroid[1].toFixed(5) + ", " + refCentroid[0].toFixed(5)],
+          ["Escala", (cfg.map_view && cfg.map_view.scale_label) || "Documentada en ficha"],
+          ["Nota", (cfg.map_view && cfg.map_view.reference_note) || "Ubicación referencial"]
+        ],
+        "PUNTO DE REFERENCIA DEL PERFIL"
+      );
+      var refMarker = new window.maplibregl.Marker({ color: "#007F8B" })
+        .setLngLat(refCentroid)
+        .setPopup(new window.maplibregl.Popup({ offset: 24 }).setDOMContent(popupNode))
+        .addTo(mapInstance);
+
+      var toggleRefCheck = document.getElementById("gv-toggle-ref-marker");
+      if (toggleRefCheck) {
+        toggleRefCheck.addEventListener("change", function () {
+          if (toggleRefCheck.checked) refMarker.addTo(mapInstance);
+          else refMarker.remove();
+        });
+      }
+
+      var coordsStatus = document.getElementById("gv-coords-readout");
+      mapInstance.on("mousemove", function (e) {
+        if (coordsStatus) {
+          coordsStatus.textContent = "Lat: " + e.lngLat.lat.toFixed(5) + " · Lon: " + e.lngLat.lng.toFixed(5) + " · Zoom: " + mapInstance.getZoom().toFixed(1);
+        }
       });
+
+      var resetViewBtn = document.getElementById("gv-reset-view");
+      if (resetViewBtn) {
+        resetViewBtn.addEventListener("click", function () {
+          mapInstance.flyTo({ center: center, zoom: zoom, essential: true });
+        });
+      }
     }
 
     // Registro de capas cargadas dinámicamente desde geovisor/capas/ o desde archivo local
@@ -564,21 +631,23 @@
       }
     }
 
-    mapInstance.on("load", function () {
-      addActiveProjectLayers();
-      setTimeout(function () {
-        initialBoundsFitted = true;
-      }, 2500);
-    });
-
-    var basemapSelect = document.getElementById("gv-basemap-select");
-    if (basemapSelect) {
-      basemapSelect.addEventListener("change", function () {
-        mapInstance.setStyle(makeStyle(basemapSelect.value));
-        mapInstance.once("styledata", function () {
-          addActiveProjectLayers();
-        });
+    if (mapInstance) {
+      mapInstance.on("load", function () {
+        addActiveProjectLayers();
+        setTimeout(function () {
+          initialBoundsFitted = true;
+        }, 2500);
       });
+
+      var basemapSelect = document.getElementById("gv-basemap-select");
+      if (basemapSelect) {
+        basemapSelect.addEventListener("change", function () {
+          mapInstance.setStyle(makeStyle(basemapSelect.value));
+          mapInstance.once("styledata", function () {
+            addActiveProjectLayers();
+          });
+        });
+      }
     }
 
     // =======================================================================
@@ -602,6 +671,25 @@
       var fmt = detectFormat(fname);
       var safeId = "folder-" + fname.replace(/[^a-zA-Z0-9_-]/g, "_");
 
+      // Formatos de proyecto GeoLibre (.geolibre.json) -> ?url=
+      if (fmt === "geolibre") {
+        window.open("https://web.geolibre.app/?url=" + encodeURIComponent(fileObj.url), "_blank", "noopener");
+        return;
+      }
+      // Formatos cloud-native avanzados (PMTiles, COG, FlatGeobuf, GeoParquet) -> ?data=
+      if (fmt === "pmtiles" || fmt === "cog" || fmt === "flatgeobuf" || fmt === "geoparquet") {
+        if (folderStatusEl) {
+          folderStatusEl.textContent = "Abriendo capa " + fname + " (" + fmt.toUpperCase() + ") en GeoLibre Studio mediante ?data=...";
+        }
+        window.open("https://web.geolibre.app/?data=" + encodeURIComponent(fileObj.url), "_blank", "noopener");
+        return;
+      }
+
+      if (!mapInstance) {
+        window.open("https://web.geolibre.app/?data=" + encodeURIComponent(fileObj.url), "_blank", "noopener");
+        return;
+      }
+
       // Si ya estaba activa dinámicamente, alternar visibilidad (quitar)
       if (dynamicFolderLayers[fname] && dynamicFolderLayers[fname].visible) {
         dynamicFolderLayers[fname].visible = false;
@@ -609,21 +697,8 @@
           if (mapInstance.getLayer(safeId + suf)) mapInstance.removeLayer(safeId + suf);
         });
         if (mapInstance.getSource("src-" + safeId)) mapInstance.removeSource("src-" + safeId);
-        btnEl.textContent = "Cargar en visor";
+        btnEl.textContent = "Cargar en mapa";
         btnEl.className = "btn btn-teal btn-xs";
-        return;
-      }
-
-      // Formatos cloud-native avanzados (PMTiles, COG, FlatGeobuf, GeoParquet, .geolibre.json)
-      if (fmt === "geolibre") {
-        window.open("https://web.geolibre.app/?url=" + encodeURIComponent(fileObj.url), "_blank", "noopener");
-        return;
-      }
-      if (fmt === "pmtiles" || fmt === "cog" || fmt === "flatgeobuf" || fmt === "geoparquet") {
-        if (folderStatusEl) {
-          folderStatusEl.textContent = "Formato cloud-native (" + fmt.toUpperCase() + "): abriendo directamente en GeoLibre Studio con soporte nativo.";
-        }
-        window.open("https://web.geolibre.app/", "_blank", "noopener");
         return;
       }
 
@@ -677,8 +752,8 @@
       folderListEl.innerHTML = "";
       if (folderStatusEl) {
         folderStatusEl.textContent = filesList.length
-          ? filesList.length + " archivo(s) compatibles detectados en geovisor/capas/ (" + sourceLabel + ")."
-          : "La carpeta geovisor/capas/ aún no tiene capas adicionales. Sube archivos .geojson, .kml, .pmtiles, .fgb o .geolibre.json al repositorio.";
+          ? filesList.length + " archivo(s) compatibles en geovisor/capas/ (" + sourceLabel + ")."
+          : "La carpeta geovisor/capas/ de esta vista aún no tiene capas adicionales. Sube archivos .geojson, .kml, .tif (COG), .pmtiles, .fgb o .geolibre.json.";
       }
 
       filesList.forEach(function (fileObj, idx) {
@@ -707,7 +782,13 @@
         var meta = document.createElement("div");
         meta.className = "layer-item-meta";
         var sizeTxt = formatBytes(fileObj.size_bytes);
-        meta.textContent = "Ruta: geovisor/capas/" + fileObj.name + (sizeTxt ? " · " + sizeTxt : "");
+        var whereTxt =
+          fmt === "geolibre"
+            ? "Proyecto GeoLibre Studio (?url=)"
+            : fmt === "geojson" || fmt === "kml"
+              ? "Visor integrado (MapLibre) + GeoLibre Studio"
+              : "GeoLibre Studio cloud-native (?data=)";
+        meta.textContent = "Ruta: geovisor/capas/" + fileObj.name + (sizeTxt ? " · " + sizeTxt : "") + " · " + whereTxt;
         item.appendChild(meta);
 
         var actions = document.createElement("div");
@@ -716,35 +797,56 @@
         actions.style.gap = "0.4rem";
         actions.style.marginTop = "0.5rem";
 
-        if (preloadedFiles[fileObj.name]) {
+        var isCloudNativeOnly = fmt === "pmtiles" || fmt === "cog" || fmt === "flatgeobuf" || fmt === "geoparquet";
+
+        if (preloadedFiles[fileObj.name] && !isCloudNativeOnly && fmt !== "geolibre") {
           var alreadyBadge = document.createElement("span");
           alreadyBadge.className = "badge badge-ok";
           alreadyBadge.textContent = "Activa en pestaña Capas";
           actions.appendChild(alreadyBadge);
 
-          var zoomBtn = document.createElement("button");
-          zoomBtn.type = "button";
-          zoomBtn.className = "btn btn-outline btn-xs";
-          zoomBtn.textContent = "Encuadrar capa";
-          zoomBtn.addEventListener("click", function () {
-            fetch(fileObj.url)
-              .then(function (r) { return r.json(); })
-              .then(function (gj) {
-                var b = computeGeoJsonBounds(gj);
-                if (b) mapInstance.fitBounds(b, { padding: 45, maxZoom: 15.5 });
-              });
-          });
-          actions.appendChild(zoomBtn);
+          if (mapInstance) {
+            var zoomBtn = document.createElement("button");
+            zoomBtn.type = "button";
+            zoomBtn.className = "btn btn-outline btn-xs";
+            zoomBtn.textContent = "Encuadrar capa";
+            zoomBtn.addEventListener("click", function () {
+              fetch(fileObj.url)
+                .then(function (r) { return r.json(); })
+                .then(function (gj) {
+                  var b = computeGeoJsonBounds(gj);
+                  if (b) mapInstance.fitBounds(b, { padding: 45, maxZoom: 15.5 });
+                });
+            });
+            actions.appendChild(zoomBtn);
+          }
         } else {
           var loadBtn = document.createElement("button");
           loadBtn.type = "button";
           var isLoaded = dynamicFolderLayers[fileObj.name] && dynamicFolderLayers[fileObj.name].visible;
           loadBtn.className = isLoaded ? "btn btn-outline btn-xs" : "btn btn-teal btn-xs";
-          loadBtn.textContent = isLoaded ? "Quitar del mapa" : "Cargar en visor";
+          loadBtn.textContent =
+            fmt === "geolibre"
+              ? "Abrir proyecto en GeoLibre Studio ↗"
+              : isCloudNativeOnly
+                ? "Abrir capa en GeoLibre Studio ↗"
+                : isLoaded
+                  ? "Quitar del mapa"
+                  : "Cargar en mapa";
           loadBtn.addEventListener("click", function () {
             loadLayerFromRepoFolder(fileObj, idx, loadBtn);
           });
           actions.appendChild(loadBtn);
+        }
+
+        if (fmt !== "geolibre" && !isCloudNativeOnly) {
+          var openInStudioLink = document.createElement("a");
+          openInStudioLink.className = "btn btn-outline btn-xs";
+          openInStudioLink.href = "https://web.geolibre.app/?data=" + encodeURIComponent(fileObj.url);
+          openInStudioLink.target = "_blank";
+          openInStudioLink.rel = "noopener noreferrer";
+          openInStudioLink.textContent = "GeoLibre Studio ↗";
+          actions.appendChild(openInStudioLink);
         }
 
         var dlLink = document.createElement("a");
@@ -762,7 +864,7 @@
 
     function discoverRepositoryFolderLayers() {
       if (folderStatusEl) {
-        folderStatusEl.textContent = "Consultando carpeta geovisor/capas/ del repositorio...";
+        folderStatusEl.textContent = "Consultando carpeta geovisor/capas/ de esta vista...";
       }
       var indexUrl = new URL("geovisor/capas/index.json", window.location.origin + baseUrl).href;
       var byName = {};
@@ -782,16 +884,17 @@
         })
         .catch(function () {});
 
-      // Consulta complementaria en vivo a la API pública de GitHub para detectar archivos recién subidos a geovisor/capas/
+      // Consulta complementaria en vivo a la API pública de GitHub SOLO del repositorio efectivo de esta vista
+      // (nunca mezcla con el repositorio canónico si se está viendo desde un fork o desde localhost).
       var ghPromise = Promise.resolve();
-      var sourceUsed = "índice del sitio";
+      var sourceUsed = isLocalhost ? "índice local de trabajo (localhost)" : "índice publicado de esta vista";
       if (repoSlug) {
         var ghApiUrl = "https://api.github.com/repos/" + repoSlug + "/contents/geovisor/capas?ref=" + encodeURIComponent(repoBranch);
         ghPromise = fetch(ghApiUrl, { headers: { Accept: "application/vnd.github+json" } })
           .then(function (r) { return r.ok ? r.json() : null; })
           .then(function (entries) {
             if (!Array.isArray(entries)) return;
-            sourceUsed = "sincronizado en vivo con " + repoSlug;
+            sourceUsed = "repositorio de esta vista (" + repoSlug + ")";
             entries.forEach(function (ent) {
               if (!ent || ent.type !== "file" || !ent.name) return;
               if (ent.name === "index.json" || !GEOLIBRE_EXT_RE.test(ent.name)) return;
@@ -839,24 +942,26 @@
             throw new Error("El archivo no tiene estructura GeoJSON o KML válida.");
           }
           localGeoJsonCache = parsed;
-          renderGeoJsonSourceLayers(
-            "local-preview-src",
-            "local-preview",
-            parsed,
-            "#007F8B",
-            0.42,
-            "#14283F",
-            2.2,
-            "VISTA PREVIA LOCAL TEMPORAL",
-            file.name
-          );
-          var bbox = computeGeoJsonBounds(parsed);
-          if (bbox) {
-            mapInstance.fitBounds(bbox, { padding: 48, maxZoom: 16 });
+          if (mapInstance) {
+            renderGeoJsonSourceLayers(
+              "local-preview-src",
+              "local-preview",
+              parsed,
+              "#007F8B",
+              0.42,
+              "#14283F",
+              2.2,
+              "VISTA PREVIA LOCAL TEMPORAL",
+              file.name
+            );
+            var bbox = computeGeoJsonBounds(parsed);
+            if (bbox) {
+              mapInstance.fitBounds(bbox, { padding: 48, maxZoom: 16 });
+            }
           }
           var count = parsed.type === "FeatureCollection" && Array.isArray(parsed.features) ? parsed.features.length : 1;
           if (localStatus) {
-            localStatus.textContent = "Capa temporal cargada: " + file.name + " (" + count + " geometría(s)). Súbela a geovisor/capas/ en tu repositorio para compartirla.";
+            localStatus.textContent = "Capa temporal leída: " + file.name + " (" + count + " geometría(s)). Súbela a geovisor/capas/ en tu repositorio para compartirla.";
           }
           if (clearLocalBtn) clearLocalBtn.classList.remove("hidden");
         } catch (err) {
@@ -886,10 +991,12 @@
     if (clearLocalBtn) {
       clearLocalBtn.addEventListener("click", function () {
         localGeoJsonCache = null;
-        ["local-preview-fill", "local-preview-line", "local-preview-pt"].forEach(function (lid) {
-          if (mapInstance.getLayer(lid)) mapInstance.removeLayer(lid);
-        });
-        if (mapInstance.getSource("local-preview-src")) mapInstance.removeSource("local-preview-src");
+        if (mapInstance) {
+          ["local-preview-fill", "local-preview-line", "local-preview-pt"].forEach(function (lid) {
+            if (mapInstance.getLayer(lid)) mapInstance.removeLayer(lid);
+          });
+          if (mapInstance.getSource("local-preview-src")) mapInstance.removeSource("local-preview-src");
+        }
         clearLocalBtn.classList.add("hidden");
         if (localStatus) localStatus.textContent = "Vista previa local limpiada.";
       });
@@ -902,7 +1009,7 @@
   function initHubRegionalMap() {
     var dataScript = document.getElementById("hub-map-points");
     var container = document.getElementById("hub-regional-map");
-    if (!dataScript || !container || typeof window.maplibregl === "undefined") return;
+    if (!dataScript || !container) return;
 
     var points;
     try {
@@ -911,14 +1018,47 @@
       return;
     }
 
-    var map = new window.maplibregl.Map({
-      container: container,
-      style: makeStyle("carto-positron"),
-      center: [-82.2, 14.1],
-      zoom: 4.35,
-      attributionControl: true,
-      canvasContextAttributes: { preserveDrawingBuffer: true }
-    });
+    function renderHubFallback() {
+      container.innerHTML = "";
+      var box = document.createElement("div");
+      box.className = "callout callout-warn";
+      box.style.margin = "1rem";
+      var h = document.createElement("strong");
+      h.textContent = "Vista accesible de ubicaciones referenciales (WebGL no activo en este navegador)";
+      box.appendChild(h);
+      var ul = document.createElement("ul");
+      ul.style.marginTop = "0.5rem";
+      points.forEach(function (pt) {
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        a.href = pt.detail_url || "#";
+        a.textContent = pt.country_name + " · " + pt.short_name + " (" + pt.territory_label + ")";
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      box.appendChild(ul);
+      container.appendChild(box);
+    }
+
+    if (typeof window.maplibregl === "undefined" || !isWebGLSupported()) {
+      renderHubFallback();
+      return;
+    }
+
+    var map;
+    try {
+      map = new window.maplibregl.Map({
+        container: container,
+        style: makeStyle("carto-positron"),
+        center: [-82.2, 14.1],
+        zoom: 4.35,
+        attributionControl: true,
+        canvasContextAttributes: { preserveDrawingBuffer: true }
+      });
+    } catch (err) {
+      renderHubFallback();
+      return;
+    }
     map.addControl(new window.maplibregl.NavigationControl(), "top-right");
 
     points.forEach(function (pt) {

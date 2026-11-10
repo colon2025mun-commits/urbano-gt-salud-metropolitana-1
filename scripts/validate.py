@@ -44,6 +44,35 @@ class LinkAndMetaCollector(html.parser.HTMLParser):
             self.has_work_banner = True
 
 
+def validate_geolibre_project_obj(gl_obj: Any, label: str, errors: list[str]) -> None:
+    if not isinstance(gl_obj, dict):
+        errors.append(f"[{label}] El archivo .geolibre.json debe ser un objeto JSON.")
+        return
+    for req_key in ("version", "name", "mapView", "basemapStyleUrl", "layers", "styles"):
+        if req_key not in gl_obj or gl_obj[req_key] is None:
+            errors.append(f"[{label}] Falta campo obligatorio de GeoLibre Studio: '{req_key}'.")
+    mv = gl_obj.get("mapView")
+    if isinstance(mv, dict):
+        c = mv.get("center")
+        if not isinstance(c, list) or len(c) != 2 or not (-180 <= float(c[0]) <= 180) or not (-90 <= float(c[1]) <= 90):
+            errors.append(f"[{label}] mapView.center inválido: {c}")
+        if not isinstance(mv.get("zoom"), (int, float)):
+            errors.append(f"[{label}] mapView.zoom inválido: {mv.get('zoom')}")
+    layers = gl_obj.get("layers")
+    if isinstance(layers, list):
+        for lyr in layers:
+            if not isinstance(lyr, dict):
+                errors.append(f"[{label}] Capa inválida en layers.")
+                continue
+            for lreq in ("id", "name", "type", "source", "style", "metadata"):
+                if lreq not in lyr:
+                    errors.append(f"[{label}] Capa '{lyr.get('id')}' sin campo requerido '{lreq}'.")
+            if isinstance(lyr.get("style"), dict):
+                for sreq in ("fillColor", "strokeColor", "strokeWidth", "fillOpacity", "vectorStyleMode"):
+                    if sreq not in lyr["style"]:
+                        errors.append(f"[{label}] Estilo de capa '{lyr.get('id')}' sin '{sreq}'.")
+
+
 def check_no_private_data(text: str, label: str, errors: list[str]) -> None:
     found_emails = EMAIL_RE.findall(text)
     if found_emails:
@@ -175,6 +204,8 @@ def validate_source() -> list[str]:
                 local_target = ROOT / str(sp)
                 if not local_target.exists():
                     errors.append(f"[geovisor/layers.json] No existe archivo local de capa: {sp}")
+        gl_src = json.loads(geolibre_path.read_text(encoding="utf-8"))
+        validate_geolibre_project_obj(gl_src, "geovisor/proyecto.geolibre.json", errors)
 
     # 5. Validar archivos editoriales Markdown
     required_md = [
@@ -307,6 +338,9 @@ def validate_site(site_dir: Path) -> list[str]:
     index_txt = (site_dir / "index.html").read_text(encoding="utf-8")
     if manifest["id"] not in index_txt:
         errors.append("[site/index.html] No conserva visible el identificador estable del proyecto.")
+
+    gl_site_obj = json.loads((site_dir / "geovisor" / "proyecto.geolibre.json").read_text(encoding="utf-8"))
+    validate_geolibre_project_obj(gl_site_obj, "site/geovisor/proyecto.geolibre.json", errors)
 
     return errors
 

@@ -11,6 +11,7 @@ import json
 import os
 import shutil
 import sys
+import urllib.parse
 from pathlib import Path
 from typing import Any
 
@@ -21,6 +22,7 @@ from site_common import (
     badge_html,
     compute_site_context,
     esc,
+    format_spanish_date,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -148,7 +150,8 @@ def render_shell(
             f'  <script src="{html.escape(ctx.site_url("assets/js/geovisor.js"), quote=True)}"></script>'
         )
 
-    updated_label = manifest["governance"].get("content_updated_at") or "Fecha de actualización no informada"
+    updated_raw = manifest["governance"].get("content_updated_at")
+    updated_label = format_spanish_date(updated_raw, "Fecha de actualización no informada")
 
     return f"""<!DOCTYPE html>
 <html lang="es">
@@ -203,7 +206,7 @@ def render_shell(
       <div>
         <p class="footer-title">{esc(manifest['title'])}</p>
         <p>Identificador estable: <code>{esc(pid)}</code> · Grupos de origen: {esc(", ".join(str(g) for g in manifest["source_groups"]))}.</p>
-        <p>Estado de actualización del contenido: {esc(updated_label)}.</p>
+        <p>Última actualización del contenido por el equipo: <strong>{esc(updated_label)}</strong>.</p>
       </div>
       <div>
         <p class="footer-title">Navegación rápida</p>
@@ -229,14 +232,150 @@ def render_shell(
 """
 
 
+def make_geolibre_layer_style(raw_style: dict[str, Any] | None) -> dict[str, Any]:
+    s = raw_style or {}
+    fill_color = str(s.get("fillColor") or "#0d9488")
+    stroke_color = str(s.get("lineColor") or s.get("strokeColor") or "#115e59")
+    stroke_width = float(s.get("lineWidth") or s.get("strokeWidth") or 2)
+    fill_opacity = float(s.get("fillOpacity") if s.get("fillOpacity") is not None else 0.35)
+    circle_radius = float(s.get("circleRadius") or 6)
+    circle_color = str(s.get("circleColor") or fill_color)
+    return {
+        "minZoom": 0,
+        "maxZoom": 24,
+        "fillColor": fill_color,
+        "strokeColor": stroke_color,
+        "strokeWidth": stroke_width,
+        "strokeWidthUnit": "pixels",
+        "strokeOpacity": 1,
+        "strokeDash": [],
+        "strokeBlur": 0,
+        "fillOpacity": fill_opacity,
+        "circleRadius": circle_radius,
+        "textColor": "#111827",
+        "textHaloColor": "#ffffff",
+        "textHaloWidth": 2,
+        "textSize": 14,
+        "labels": {
+            "enabled": False,
+            "field": "",
+            "expression": "",
+            "placement": "point",
+            "size": 12,
+            "color": "#111827",
+            "haloColor": "#ffffff",
+            "haloWidth": 1.5,
+            "minZoom": 0,
+            "maxZoom": 24,
+            "allowOverlap": False,
+            "anchor": "center",
+            "offsetX": 0,
+            "offsetY": 0,
+            "rotation": 0,
+            "maxWidth": 10,
+            "transform": "none",
+            "numberFormatEnabled": False,
+            "numberDecimals": 0,
+            "numberLocale": "",
+            "dedupe": "off",
+            "sizeExpression": "",
+            "colorExpression": "",
+            "opacityExpression": "",
+            "visibilityExpression": "",
+            "priorityExpression": "",
+        },
+        "extrusionEnabled": False,
+        "extrusionColor": fill_color,
+        "extrusionOpacity": 0.8,
+        "extrusionHeightProperty": "height",
+        "extrusionHeightScale": 1,
+        "extrusionBase": 0,
+        "extrusionBaseProperty": "",
+        "extrusionBaseScale": 1,
+        "extrusionFloorHeight": 0,
+        "extrusionAdvancedStyleEnabled": False,
+        "extrusionColorExpression": "",
+        "extrusionHeightExpression": "",
+        "extrusionBaseExpression": "",
+        "elevation3dEnabled": False,
+        "elevation3dVerticalScale": 1,
+        "elevation3dOffset": 0,
+        "vectorStyleMode": "single",
+        "vectorStyleProperty": "",
+        "vectorStyleClassCount": 5,
+        "vectorStyleColorRamp": "viridis",
+        "vectorStyleClassificationScheme": "equal-interval",
+        "vectorStyleStops": [
+            {"value": 0, "color": "#dbeafe"},
+            {"value": 1, "color": fill_color},
+        ],
+        "vectorStyleExpression": "",
+        "vectorRules": [],
+        "proportionalSizeEnabled": False,
+        "proportionalSizeProperty": "",
+        "proportionalSizeMinValue": 0,
+        "proportionalSizeMaxValue": 100,
+        "proportionalSizeMinRadius": 4,
+        "proportionalSizeMaxRadius": 24,
+        "fillPattern": "none",
+        "fillPatternColor": stroke_color,
+        "fillPatternSvg": "",
+        "markerEnabled": False,
+        "markerShape": "circle",
+        "markerColor": circle_color,
+        "markerSize": 18,
+        "markerSvg": "",
+        "simpleStyleEnabled": False,
+        "diagramType": "none",
+        "diagramFields": [],
+        "diagramSizeMode": "fixed",
+        "diagramSize": 30,
+        "diagramSizeProperty": "",
+        "diagramMinZoom": 0,
+        "diagramDeclutter": False,
+        "pointRenderer": "single",
+        "heatmapRadius": 30,
+        "heatmapIntensity": 1,
+        "heatmapColorRamp": "turbo",
+        "heatmapWeightProperty": "",
+        "clusterRadius": 50,
+        "clusterMaxZoom": 14,
+        "invertedFillEnabled": False,
+        "lineDecoration": "none",
+        "lineDecorationColor": "",
+        "lineDecorationSize": 12,
+        "lineDecorationSpacing": 80,
+        "geometryGenerator": "none",
+        "geometryGeneratorBufferDistance": 1000,
+        "geometryGeneratorBufferProperty": "",
+        "geometryGeneratorFillColor": "#f59e0b",
+        "geometryGeneratorStrokeColor": "#b45309",
+        "geometryGeneratorStrokeWidth": 2,
+        "geometryGeneratorOpacity": 0.4,
+        "geometryGeneratorCircleRadius": 5,
+        "geometryGeneratorSizeProperty": "",
+        "geometryGeneratorSizeMinValue": 0,
+        "geometryGeneratorSizeMaxValue": 100,
+        "geometryGeneratorSizeMinRadius": 4,
+        "geometryGeneratorSizeMaxRadius": 24,
+        "rasterBrightnessMin": 0,
+        "rasterBrightnessMax": 1,
+        "rasterSaturation": 0,
+        "rasterContrast": 0,
+        "rasterHueRotate": 0,
+        "blendMode": "normal",
+    }
+
+
 def build_geolibre_project_json(
     layers_cfg: dict[str, Any],
     manifest: dict[str, Any],
     ctx: SiteContext,
 ) -> dict[str, Any]:
     pid = manifest["id"]
-    sources: dict[str, Any] = {}
     active_layers: list[dict[str, Any]] = []
+    styles_map: dict[str, Any] = {}
+    legend_order: list[str] = []
 
     for lyr in layers_cfg.get("layers", []):
         sp = lyr.get("source_path")
@@ -245,53 +384,119 @@ def build_geolibre_project_json(
             continue
         lid = lyr["id"]
         resolved = sp if str(sp).startswith("https://") else ctx.full_url(str(sp))
-        sources[lid] = {
-            "type": "geojson" if lyr.get("format") == "geojson" else "raster",
-            "url": resolved,
-        }
-        active_layers.append(
-            {
-                "id": lid,
-                "name": lyr["title"],
-                "source": lid,
+        fmt = str(lyr.get("format") or "geojson").lower()
+        layer_type = "geojson" if fmt in ("geojson", "json", "kml") else ("cog" if fmt in ("tif", "tiff", "cog") else ("pmtiles" if fmt == "pmtiles" else "raster"))
+        full_style = make_geolibre_layer_style(lyr.get("style"))
+        styles_map[lid] = full_style
+        legend_order.append(lid)
+
+        embedded_geojson = None
+        if not str(sp).startswith("https://") and fmt in ("geojson", "json"):
+            local_file = ROOT / str(sp)
+            if local_file.exists() and local_file.stat().st_size <= 5 * 1024 * 1024:
+                try:
+                    parsed_gj = json.loads(local_file.read_text(encoding="utf-8"))
+                    if isinstance(parsed_gj, dict) and parsed_gj.get("type") == "FeatureCollection":
+                        embedded_geojson = parsed_gj
+                except Exception:
+                    embedded_geojson = None
+
+        layer_entry: dict[str, Any] = {
+            "id": lid,
+            "name": lyr["title"],
+            "type": layer_type,
+            "source": {
+                "type": "geojson" if layer_type == "geojson" else "raster",
+                "url": resolved,
+                "data": resolved if layer_type == "geojson" else None,
+            },
+            "visible": True,
+            "opacity": 1,
+            "style": full_style,
+            "metadata": {
+                "sourceUrl": resolved,
                 "status": st,
-                "visible": True,
-                "style": lyr.get("style", {}),
-            }
-        )
+                "resolution": lyr.get("resolution"),
+                "caveat": lyr.get("caveat"),
+            },
+        }
+        if embedded_geojson is not None:
+            layer_entry["geojson"] = embedded_geojson
+        active_layers.append(layer_entry)
+
+    mv = layers_cfg.get("map_view", {})
+    center = mv.get("center", [-84.0, 13.5])
+    zoom = float(mv.get("zoom", 10))
+    map_view_obj: dict[str, Any] = {
+        "center": [float(center[0]), float(center[1])],
+        "zoom": zoom,
+        "bearing": 0,
+        "pitch": 0,
+    }
+    if mv.get("bbox") and isinstance(mv["bbox"], list) and len(mv["bbox"]) == 4:
+        map_view_obj["bbox"] = [float(x) for x in mv["bbox"]]
 
     return {
-        "version": "1.0.0",
         "id": f"geolibre-{pid}",
+        "version": "0.2.0",
         "name": f"{manifest['country']['name']} · {layers_cfg.get('title', manifest['title'])}",
-        "description": manifest["summary"],
+        "mapView": map_view_obj,
+        "basemapStyleUrl": "https://tiles.openfreemap.org/styles/positron",
+        "basemapVisible": True,
+        "basemapOpacity": 1,
+        "blankBackgroundColor": None,
+        "primaryRenderer": "maplibre",
+        "layers": active_layers,
+        "selectedLayerId": active_layers[0]["id"] if active_layers else None,
+        "layerGroups": [],
+        "styles": styles_map,
+        "preferences": {
+            "map": {
+                "restrictBounds": False,
+                "bounds": [-180, -85, 180, 85],
+                "minZoom": 0,
+                "maxZoom": 24,
+                "maxPitch": 85,
+                "renderWorldCopies": True,
+                "projection": "mercator",
+                "ellipsoidId": "earth",
+                "scaleUnit": "metric",
+                "showPointerElevation": False,
+                "terrainEnabled": False,
+                "coordinateFormat": "dd",
+                "zoomToNewLayers": True,
+            },
+            "environmentVariables": [],
+            "geocoding": {
+                "providerId": "nominatim",
+                "apiKeys": {},
+            },
+        },
+        "legend": {
+            "title": "Capas del proyecto",
+            "groupByLayer": True,
+            "order": legend_order,
+            "overrides": {},
+        },
+        "comments": [],
         "metadata": {
             "project_id": pid,
+            "description": manifest["summary"],
             "schema_version": manifest["schema_version"],
             "community": "Comunidad Urbana Copernicus Centroamérica",
             "referential_frame_only": len(active_layers) == 0,
-            "note": layers_cfg.get("map_view", {}).get("reference_note"),
+            "note": mv.get("reference_note"),
+            "planned_layers": [
+                {
+                    "id": lyr["id"],
+                    "title": lyr["title"],
+                    "status": lyr["status"],
+                    "expected_file_hint": lyr.get("expected_file_hint"),
+                    "caveat": lyr.get("caveat"),
+                }
+                for lyr in layers_cfg.get("layers", [])
+            ],
         },
-        "map": {
-            "engine": "maplibre",
-            "center": layers_cfg.get("map_view", {}).get("center", [-84.0, 13.5]),
-            "zoom": layers_cfg.get("map_view", {}).get("zoom", 10),
-            "bearing": 0,
-            "pitch": 0,
-            "basemap": "carto-positron",
-        },
-        "sources": sources,
-        "layers": active_layers,
-        "planned_layers": [
-            {
-                "id": lyr["id"],
-                "title": lyr["title"],
-                "status": lyr["status"],
-                "expected_file_hint": lyr.get("expected_file_hint"),
-                "caveat": lyr.get("caveat"),
-            }
-            for lyr in layers_cfg.get("layers", [])
-        ],
     }
 
 
@@ -347,12 +552,39 @@ def build_home_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: dict[s
     """
 
     mv = layers_cfg.get("map_view", {})
+    repo_url = (manifest["links"].get("repository") or "").rstrip("/")
+    hub_base = (ctx.hub_url or "https://copernicuscentroamerica.github.io/clusterurbano/").rstrip("/")
+    ejercicio_url = f"{hub_base}/ejercicio/"
+    new_task_url = f"{repo_url}/issues/new?template=01-tarea-pmv.yml" if repo_url else ctx.site_url("colaborar/")
+    support_url = f"{repo_url}/issues/new?template=02-bloqueo-apoyo.yml" if repo_url else ctx.site_url("colaborar/")
+    pulls_url = f"{repo_url}/pulls" if repo_url else ctx.site_url("colaborar/")
+
     body = f"""
     {render_status_strip(manifest)}
 
     <section class="section">
+      <div class="card" style="border-left:4px solid var(--c-teal);">
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0.75rem;">
+          <div>
+            <span class="badge badge-ok">Trabajar en este proyecto</span>
+            <h2 style="margin:0.35rem 0 0.25rem;font-size:1.2rem;">Accesos directos para participantes e instituciones</h2>
+            <p style="margin:0;font-size:0.9rem;color:var(--c-text-muted);">Usa estos enlaces para incorporar avances, ejecutar el ejercicio práctico (Google Colab o Google Earth Engine con la misma cuenta de Google que uses en Antigravity), registrar tareas o solicitar apoyo técnico.</p>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+            {f'<a class="btn btn-outline btn-xs" href="{html.escape(repo_url, quote=True)}" target="_blank" rel="noopener noreferrer">Repositorio oficial ↗</a>' if repo_url else ''}
+            <a class="btn btn-teal btn-xs" href="{html.escape(ctx.site_url('colaborar/'), quote=True)}">Guía de incorporación</a>
+            <a class="btn btn-primary btn-xs" href="{html.escape(ejercicio_url, quote=True)}">Ejercicio Colab / GEE ↗</a>
+            <a class="btn btn-outline btn-xs" href="{html.escape(new_task_url, quote=True)}" target="_blank" rel="noopener noreferrer">Crear tarea ↗</a>
+            <a class="btn btn-outline btn-xs" href="{html.escape(support_url, quote=True)}" target="_blank" rel="noopener noreferrer">Solicitar apoyo ↗</a>
+            <a class="btn btn-outline btn-xs" href="{html.escape(pulls_url, quote=True)}" target="_blank" rel="noopener noreferrer">Enviar o revisar PR ↗</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
       <div class="section-header">
-        <h2> Contexto institucional y territorial</h2>
+        <h2>Contexto institucional y territorial</h2>
         <div class="tag-list">{tags_spans}</div>
       </div>
       <div class="grid-3">
@@ -396,7 +628,7 @@ def build_home_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: dict[s
         <article class="card">
           <span class="badge badge-warn">Geovisor basado en GeoLibre</span>
           <h3>Espacio de visualización geoespacial</h3>
-          <p>Este repositorio incorpora un geovisor interactivo basado en <strong>GeoLibre / MapLibre GL JS</strong> configurado en <code>geovisor/proyecto.geolibre.json</code> y <code>geovisor/layers.json</code> para desplegar las capas generadas por el equipo.</p>
+          <p>Este repositorio incorpora un visor integrado basado en <strong>MapLibre GL JS</strong> y exporta un proyecto estándar <code>geovisor/proyecto.geolibre.json</code> (v0.2.0) compatible con <strong>GeoLibre Studio</strong> para desplegar las capas en <code>geovisor/capas/</code>.</p>
           <p><strong>Capas preconfiguradas en catálogo:</strong> {len(layers_cfg.get('layers', []))} capas previstas ({sum(1 for l in layers_cfg.get('layers', []) if l.get('status') in ('publicado', 'en_revision'))} publicadas/en revisión actualmente).</p>
           <div class="card-footer">
             <a class="btn btn-primary" href="{html.escape(ctx.site_url('aplicacion/'), quote=True)}">Explorar Geovisor →</a>
@@ -442,25 +674,31 @@ def build_proyecto_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: di
         else "<p>Criterios de aceptación pendientes de definir.</p>"
     )
 
+    src_map = {s["id"]: s["label"] for s in manifest["provenance"]["sources"]}
     src_rows = []
     for s in manifest["provenance"]["sources"]:
         url_cell = (
-            f'<a href="{html.escape(s["url"], quote=True)}" target="_blank" rel="noopener noreferrer">Enlace externo ↗</a>'
+            f'<a href="{html.escape(s["url"], quote=True)}" target="_blank" rel="noopener noreferrer">Abrir referencia externa ↗</a>'
             if s.get("url")
-            else "Documento del expediente interno"
+            else "Documento del expediente técnico de la cartera"
         )
         src_rows.append(
-            f"<tr><td><code>{esc(s['id'])}</code></td><td>{esc(s['label'])}</td><td>{url_cell}</td></tr>"
+            f"<tr><td><strong>{esc(s['label'])}</strong><br><small style='color:var(--c-text-muted);'>Código interno de trazabilidad: <code>{esc(s['id'])}</code></small></td><td>{url_cell}</td></tr>"
         )
 
     stmt_rows = []
     for st in manifest["provenance"]["statements"]:
         ptr = st["pointer"] or "/ (raíz)"
-        sids = ", ".join(st.get("source_ids", [])) or "—"
+        sids = ", ".join(f"{sid} ({src_map.get(sid, sid)})" for sid in st.get("source_ids", [])) or "—"
         stmt_rows.append(
             f"<tr><td><code>{esc(ptr)}</code></td><td>{badge_html(st['status'])}</td>"
-            f"<td><code>{esc(sids)}</code></td><td>{esc(st.get('note'), '—')}</td></tr>"
+            f"<td>{esc(sids)}</td><td>{esc(st.get('note'), '—')}</td></tr>"
         )
+
+    gov = manifest.get("governance", {})
+    updated_label = format_spanish_date(gov.get("content_updated_at"), "Pendiente de informar")
+    repo_url = (manifest["links"].get("repository") or "").rstrip("/")
+    support_url = f"{repo_url}/issues/new?template=02-bloqueo-apoyo.yml" if repo_url else ctx.site_url("colaborar/")
 
     hero = f"""
     <section class="hero">
@@ -477,6 +715,26 @@ def build_proyecto_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: di
 
     body = f"""
     {render_status_strip(manifest)}
+
+    <section class="section">
+      <div class="card">
+        <h3>Gobernanza, coordinación operativa y fechas clave</h3>
+        <div class="grid-3">
+          <div>
+            <p><strong>Instituciones participantes:</strong><br>{esc(", ".join(manifest["institutional_use"].get("institutions", [])), "Por confirmar")}</p>
+            <p><strong>Responsabilidad funcional:</strong><br>Equipo técnico de la iniciativa ({esc(manifest['country']['name'])}) · Coordinación regional del Clúster Urbano.</p>
+          </div>
+          <div>
+            <p><strong>Próximo entregable previsto:</strong><br>Capas de salida del PMV en <code>geovisor/capas/</code> y validación de criterios de aceptación.</p>
+            <p><strong>Última actualización del contenido por el equipo:</strong><br><code>governance.content_updated_at</code>: <strong>{esc(updated_label)}</strong></p>
+          </div>
+          <div>
+            <p><strong>Canal de soporte y atención técnica:</strong><br>Formulario estructurado de bloqueos e incidencias del repositorio con atención de la facilitación del clúster.</p>
+            <p><a class="btn btn-teal btn-xs" href="{html.escape(support_url, quote=True)}" target="_blank" rel="noopener noreferrer">Solicitar apoyo técnico ↗</a></p>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <section class="section">
       <div class="prose">
@@ -497,27 +755,23 @@ def build_proyecto_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: di
     </section>
 
     <section class="section">
-      <h2>Fuentes documentales y registro de procedencia</h2>
-      <div class="grid-2">
-        <div>
-          <h3>Fuentes registradas</h3>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Código</th><th>Documento original</th><th>Referencia</th></tr></thead>
-              <tbody>{"".join(src_rows)}</tbody>
-            </table>
-          </div>
-        </div>
-        <div>
-          <h3>Declaraciones de procedencia por campo</h3>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Campo</th><th>Estado</th><th>Fuentes</th><th>Nota</th></tr></thead>
-              <tbody>{"".join(stmt_rows)}</tbody>
-            </table>
-          </div>
-        </div>
+      <h2>Fuentes documentales de referencia</h2>
+      <p>Documentos e insumos a partir de los cuales se estructuró el perfil inicial de la iniciativa:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Documento o insumo de origen</th><th>Referencia / disponibilidad</th></tr></thead>
+          <tbody>{"".join(src_rows)}</tbody>
+        </table>
       </div>
+      <details class="card" style="margin-top:1rem;">
+        <summary style="cursor:pointer;font-weight:700;color:var(--c-navy);">Ver registro técnico de procedencia por campo (JSON Pointer y códigos internos de auditoría)</summary>
+        <div class="table-wrap" style="margin-top:0.85rem;">
+          <table>
+            <thead><tr><th>Campo (JSON Pointer)</th><th>Estado</th><th>Fuentes asociadas</th><th>Nota metodológica</th></tr></thead>
+            <tbody>{"".join(stmt_rows)}</tbody>
+          </table>
+        </div>
+      </details>
     </section>
     """
 
@@ -605,15 +859,23 @@ def build_aplicacion_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: 
         </section>
         """
 
+    effective_repo_slug = (
+        ctx.github_repository
+        if ctx.github_repository
+        else (ctx.canonical_repository if ctx.effective_mode == "canonical" else None)
+    )
     runtime_cfg = dict(layers_cfg)
     runtime_cfg["site_base_url"] = ctx.site_url("")
-    runtime_cfg["repository_slug"] = ctx.canonical_repository
+    runtime_cfg["repository_slug"] = effective_repo_slug
+    runtime_cfg["canonical_repository_slug"] = ctx.canonical_repository
+    runtime_cfg["effective_mode"] = ctx.effective_mode
     runtime_cfg["repository_branch"] = "main"
     safe_json_cfg = json.dumps(runtime_cfg, ensure_ascii=False).replace("</", "<\\/")
 
     repo_capas_gh_btn = ""
-    if manifest["links"].get("repository"):
-        gh_capas_url = manifest["links"]["repository"].rstrip("/") + "/tree/main/geovisor/capas"
+    target_gh_slug = effective_repo_slug or ctx.canonical_repository
+    if target_gh_slug:
+        gh_capas_url = f"https://github.com/{target_gh_slug}/tree/main/geovisor/capas"
         repo_capas_gh_btn = (
             f'<a class="btn btn-outline btn-xs" href="{html.escape(gh_capas_url, quote=True)}" '
             f'target="_blank" rel="noopener noreferrer">Abrir geovisor/capas/ en GitHub ↗</a>'
@@ -628,12 +890,18 @@ def build_aplicacion_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: 
           {badge_html(manifest['status']['demo'], 'Estado Demo')}
         </div>
         <h1>Geovisor del proyecto y espacio de integración de capas</h1>
-        <p class="hero-lead">Visualizador construido sobre MapLibre GL JS y sincronizado con <code>geovisor/proyecto.geolibre.json</code> y la carpeta <code>geovisor/capas/</code> del repositorio para desplegar capas en formatos compatibles con GeoLibre.</p>
+        <p class="hero-lead">Visor integrado sobre MapLibre GL JS y proyecto exportable <code>geovisor/proyecto.geolibre.json</code> (v0.2.0) compatible con GeoLibre Studio para desplegar las capas de <code>geovisor/capas/</code>.</p>
       </div>
     </section>
     """
 
     geolibre_json_href = html.escape(ctx.site_url("geovisor/proyecto.geolibre.json"), quote=True)
+    geolibre_full_url = ctx.full_url("geovisor/proyecto.geolibre.json")
+    studio_open_href = (
+        f"https://web.geolibre.app/?url={urllib.parse.quote(geolibre_full_url, safe='')}"
+        if geolibre_full_url.startswith("https://")
+        else "https://web.geolibre.app/"
+    )
 
     body = f"""
     <div class="callout">
@@ -670,7 +938,7 @@ def build_aplicacion_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: 
 
           <div class="geovisor-panel" data-gv-panel="repo-folder">
             <h3 style="margin-top:0;font-size:1rem;color:var(--c-navy);">Cargar capa desde carpeta del repositorio</h3>
-            <p style="font-size:0.83rem;">Lee automáticamente los archivos geoespaciales subidos a <code>geovisor/capas/</code> en este repositorio (formatos compatibles con GeoLibre: <code>.geojson</code>, <code>.kml</code>, <code>.geolibre.json</code>, <code>.pmtiles</code>, <code>.fgb</code>, <code>.tif</code> COG, <code>.geoparquet</code>).</p>
+            <p style="font-size:0.82rem;">Lee los archivos publicados en <code>geovisor/capas/</code> de <strong>esta vista</strong> (en una copia personal o fork lee exclusivamente tu repositorio para no mezclar capas con el repositorio oficial).</p>
             <div style="display:flex;flex-wrap:wrap;gap:0.45rem;margin-bottom:0.75rem;">
               <button type="button" id="gv-refresh-repo-folder" class="btn btn-teal btn-xs">Leer / Refrescar carpeta</button>
               {repo_capas_gh_btn}
@@ -680,8 +948,8 @@ def build_aplicacion_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: 
           </div>
 
           <div class="geovisor-panel" data-gv-panel="local">
-            <h3 style="margin-top:0;font-size:1rem;color:var(--c-navy);">Inspeccionar archivo desde tu equipo</h3>
-            <p style="font-size:0.84rem;">Arrastra o selecciona un archivo <code>.geojson</code> o <code>.kml</code> desde tu computadora para verificarlo antes de subirlo a <code>geovisor/capas/</code>.</p>
+            <h3 style="margin-top:0;font-size:1rem;color:var(--c-navy);">Inspeccionar archivo desde tu equipo (Archivo local)</h3>
+            <p style="font-size:0.84rem;">Arrastra o selecciona un archivo <code>.geojson</code> o <code>.kml</code> desde tu computadora para verificar su geometría y atributos antes de subirlo a <code>geovisor/capas/</code>.</p>
             <div class="dropzone" id="gv-dropzone" tabindex="0" role="button" aria-label="Seleccionar archivo GeoJSON o KML local">
               <strong>Haz clic o arrastra aquí un .geojson / .kml</strong>
               <div style="font-size:0.78rem;margin-top:0.25rem;">WGS84 (EPSG:4326) recomendado</div>
@@ -692,11 +960,11 @@ def build_aplicacion_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: 
           </div>
 
           <div class="geovisor-panel" data-gv-panel="embed">
-            <h3 style="margin-top:0;font-size:1rem;color:var(--c-navy);">Integración nativa con GeoLibre</h3>
-            <p id="geolibre-embed-notice" style="font-size:0.84rem;">GeoLibre permite abrir o incrustar el archivo versionado <code>geovisor/proyecto.geolibre.json</code> con soporte para COG, PMTiles, GeoParquet, STAC, comparador swipe y consultas DuckDB-WASM.</p>
+            <h3 style="margin-top:0;font-size:1rem;color:var(--c-navy);">Integración con GeoLibre Studio</h3>
+            <p id="geolibre-embed-notice" style="font-size:0.83rem;">Este sitio combina dos piezas complementarias: el <strong>visor integrado (MapLibre GL JS)</strong> para consulta rápida de vectores y el archivo de proyecto <code>geovisor/proyecto.geolibre.json</code> (esquema oficial v0.2.0 con <code>mapView</code>, <code>layers</code> y <code>styles</code>) para abrir la iniciativa completa en <strong>GeoLibre Studio</strong>.</p>
             <div style="display:flex;flex-direction:column;gap:0.55rem;margin-top:0.85rem;">
+              <a class="btn btn-primary" href="{html.escape(studio_open_href, quote=True)}" target="_blank" rel="noopener noreferrer">Abrir proyecto en GeoLibre Studio ↗</a>
               <a class="btn btn-teal" href="{geolibre_json_href}" download="proyecto-{esc(pid)}.geolibre.json">Descargar proyecto.geolibre.json</a>
-              <a class="btn btn-outline" href="https://web.geolibre.app/" target="_blank" rel="noopener noreferrer">Abrir web.geolibre.app ↗</a>
             </div>
           </div>
         </aside>
@@ -708,7 +976,7 @@ def build_aplicacion_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: 
               <button type="button" id="gv-open-folder-tab" class="btn btn-teal btn-xs">Cargar desde carpeta</button>
               <button type="button" id="gv-reset-view" class="btn btn-outline-light btn-xs">Encuadre inicial</button>
               <a class="btn btn-outline-light btn-xs" href="{geolibre_json_href}">JSON GeoLibre</a>
-              <a id="btn-open-geolibre-studio" class="btn btn-primary btn-xs" href="https://web.geolibre.app/" target="_blank" rel="noopener noreferrer">Abrir en GeoLibre Studio ↗</a>
+              <a id="btn-open-geolibre-studio" class="btn btn-primary btn-xs" href="{html.escape(studio_open_href, quote=True)}" target="_blank" rel="noopener noreferrer">Abrir en GeoLibre Studio ↗</a>
             </div>
           </div>
           <div id="geovisor-map-canvas" class="geovisor-canvas" role="region" aria-label="Mapa interactivo del proyecto"></div>
@@ -723,11 +991,42 @@ def build_aplicacion_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: 
     </section>
 
     <section class="section">
-      <div class="card">
-        <span class="badge badge-propuesta">Módulos funcionales previstos para el PMV</span>
-        <h2>Controles y análisis especificados por el perfil</h2>
-        <p>Conforme al expediente de la iniciativa, los siguientes módulos y selectores se habilitan progresivamente conforme el equipo incorpora las salidas verificadas en el repositorio:</p>
-        <ul>{controls_li}</ul>
+      <div class="grid-2">
+        <div class="card">
+          <span class="badge badge-declarado">Comportamiento por tipo de archivo</span>
+          <h2>Formatos admitidos en <code>geovisor/capas/</code></h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Formato</th><th>Dónde se abre</th><th>Pasos necesarios</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>.geojson</code>, <code>.json</code>, <code>.kml</code></td>
+                  <td>Visor integrado del sitio (MapLibre) y GeoLibre Studio</td>
+                  <td>Pulsar <strong>Cargar en mapa</strong> en la pestaña <em>Carpeta repo</em> (o arrastrar en <em>Archivo local</em>).</td>
+                </tr>
+                <tr>
+                  <td><code>.geolibre.json</code></td>
+                  <td>GeoLibre Studio (<code>web.geolibre.app/?url=...</code>)</td>
+                  <td>Pulsar <strong>Abrir en GeoLibre Studio</strong> para restaurar encuadre (<code>mapView</code>), capas y estilos.</td>
+                </tr>
+                <tr>
+                  <td><code>.tif</code> / <code>.tiff</code> (COG), <code>.pmtiles</code>, <code>.fgb</code>, <code>.geoparquet</code></td>
+                  <td>GeoLibre Studio (<code>web.geolibre.app/?data=...</code>)</td>
+                  <td>Pulsar <strong>Abrir capa en GeoLibre Studio</strong> en la pestaña <em>Carpeta repo</em> (transfiere la URL pública mediante <code>?data=</code>).</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="badge badge-propuesta">Módulos funcionales previstos para el PMV</span>
+          <h2>Controles y análisis especificados por el perfil</h2>
+          <p>Conforme al expediente de la iniciativa, los siguientes módulos y selectores se habilitan progresivamente conforme el equipo incorpora las salidas verificadas en el repositorio:</p>
+          <ul>{controls_li}</ul>
+        </div>
       </div>
     </section>
 
@@ -982,18 +1281,40 @@ gh pr create --repo {canonical_slug} --base main --head TU_USUARIO_GITHUB:feat/n
     </section>
     """
 
+    hub_base = (ctx.hub_url or "https://copernicuscentroamerica.github.io/clusterurbano/").rstrip("/")
+    ejercicio_url = f"{hub_base}/ejercicio/"
+    repo_url = (confirmed_repo_url or f"https://github.com/{canonical_slug}").rstrip("/")
+
     body = f"""
     <div class="callout">
       <strong>Identidad del repositorio de esta iniciativa</strong>
       <span>{repo_status_note} El identificador <code>{esc(pid)}</code> debe permanecer intacto en <code>project.json</code> incluso cuando trabajes en un fork personal.</span>
     </div>
 
+    <section class="section" id="ejercicio-practico">
+      <article class="card" style="border-left:4px solid var(--c-teal);">
+        <span class="badge badge-ok">Ejercicio guiado de extremo a extremo</span>
+        <h2>Ejercicio práctico: Mancha Urbana con Sentinel-2 (Google Colab + Google Earth Engine + Antigravity)</h2>
+        <p>¿Es tu primera vez contribuyendo al proyecto? En el portal regional dispones de un ejercicio completo paso a paso para clasificar el área construida (<em>built-up</em>) con imágenes <strong>Copernicus Sentinel-2 L2A</strong> y un modelo <strong>Random Forest</strong> entrenado con etiquetas automáticas de edificios y red vial, usando la <strong>misma cuenta de Google</strong> que utilizas en Antigravity:</p>
+        <ul>
+          <li><strong>Guía A — Google Colab:</strong> ejecuta el cuaderno interactivo <code>mancha_urbana_sentinel2_vmod01.ipynb</code> en la nube sin instalar paquetes locales y descarga <code>probabilidad.tif</code>, <code>construido.tif</code>, <code>resumen.csv</code> y el polígono vectorial <code>.geojson</code>.</li>
+          <li><strong>Guía B — Google Earth Engine (GEE):</strong> replica el flujo equivalente sobre el catálogo <code>COPERNICUS/S2_SR_HARMONIZED</code> y <code>ee.Classifier.smileRandomForest</code> para escalar a series multianuales y exportar directamente a <code>EPSG:4326</code>.</li>
+          <li><strong>Integración con Antigravity:</strong> coloca los productos resultantes en <code>geovisor/capas/</code>, actualiza la narrativa en <code>content/</code> y envía tu Pull Request para revisión del equipo.</li>
+        </ul>
+        <div class="card-footer">
+          <a class="btn btn-primary" href="{html.escape(ejercicio_url, quote=True)}">Ir al ejercicio guiado (Colab + GEE + Antigravity) →</a>
+          <a class="btn btn-teal" href="{html.escape(ctx.site_url('aplicacion/'), quote=True)}">Abrir Geovisor de {esc(pid)}</a>
+          <a class="btn btn-outline" href="{html.escape(repo_url + '/pulls', quote=True)}" target="_blank" rel="noopener noreferrer">Ver Pull Requests del proyecto ↗</a>
+        </div>
+      </article>
+    </section>
+
     <section class="section">
       <div class="grid-2">
         <article class="card">
           <span class="badge badge-propuesta">Flujo A · Recomendado para participantes</span>
-          <h3>1. Fork personal, clonación y rama</h3>
-          <p>Crea o reutiliza el fork en tu cuenta personal, configura <code>origin</code> (tu fork) y <code>upstream</code> (el repositorio canónico del equipo):</p>
+          <h3>1. Fork personal, clonación y rama descriptiva</h3>
+          <p>Crea o reutiliza el fork en tu cuenta personal, configura <code>origin</code> (tu fork) y <code>upstream</code> (el repositorio canónico del equipo), y crea una rama con nombre descriptivo de tu tarea:</p>
           <pre id="cmd-fork" class="code-block"><code>{html.escape(fork_cmds)}</code></pre>
           <div class="card-footer">
             <button type="button" class="btn btn-outline btn-xs" data-copy-target="cmd-fork">Copiar comandos</button>
@@ -1017,10 +1338,16 @@ gh pr create --repo {canonical_slug} --base main --head TU_USUARIO_GITHUB:feat/n
         <span class="badge badge-declarado">Despliegue de capas en el Geovisor GeoLibre</span>
         <h3>Cómo publicar una nueva capa geoespacial del equipo</h3>
         <ol>
-          <li>Verifica que la capa tenga CRS <code>EPSG:4326</code> (WGS84), topología limpia, autorización de publicación y ausencia de datos personales o prediales restringidos.</li>
-          <li>Si es un archivo compatible con GeoLibre (<code>.geojson</code>, <code>.kml</code>, <code>.geolibre.json</code>, <code>.pmtiles</code>, <code>.fgb</code>), súbelo a <code>geovisor/capas/</code>: aparecerá de inmediato en la pestaña <strong>Carpeta repo</strong> («Cargar desde carpeta»). Si es un servicio externo pesado (COG/XYZ/WMS), usa su URL <code>https://</code>.</li>
+          <li>Verifica que la capa tenga CRS <code>EPSG:4326</code> (WGS84), topología limpia, tabla de atributos documentada, autorización de publicación y ausencia de datos personales o prediales restringidos (puedes inspeccionarla antes en la pestaña <strong>Archivo local</strong> del geovisor).</li>
+          <li>Coloca el archivo en <code>geovisor/capas/</code>:
+            <ul>
+              <li><code>.geojson</code>, <code>.json</code> y <code>.kml</code> se cargan directamente en el <strong>visor integrado (MapLibre)</strong> desde la pestaña <strong>Carpeta repo</strong>.</li>
+              <li><code>.geolibre.json</code> abre el proyecto completo con estilos en <strong>GeoLibre Studio</strong> (<code>?url=...</code>).</li>
+              <li><code>.tif</code> (COG), <code>.pmtiles</code>, <code>.fgb</code> y <code>.geoparquet</code> transfieren automáticamente su URL a <strong>GeoLibre Studio</strong> mediante <code>?data=...</code>.</li>
+            </ul>
+          </li>
           <li>Para dejar una capa activa por defecto al abrir el visor, edita <code>geovisor/layers.json</code>: coloca <code>geovisor/capas/tu_capa.geojson</code> en <code>source_path</code> y cambia <code>status</code> a <code>"en_revision"</code> o <code>"publicado"</code>.</li>
-          <li>Ejecuta <code>python3 scripts/build_site.py --output site</code>: el generador actualizará automáticamente <code>site/geovisor/proyecto.geolibre.json</code> y activará el control en el Geovisor.</li>
+          <li>Ejecuta <code>python3 scripts/build_site.py --output site</code>: el generador actualizará automáticamente <code>site/geovisor/proyecto.geolibre.json</code> (v0.2.0) y activará el control en el Geovisor.</li>
         </ol>
       </article>
     </section>
@@ -1028,8 +1355,9 @@ gh pr create --repo {canonical_slug} --base main --head TU_USUARIO_GITHUB:feat/n
     <section class="section">
       <div class="grid-2">
         <article class="card">
-          <h3>3. Enviar Pull Request al repositorio canónico</h3>
+          <h3>3. Enviar Pull Request y dar seguimiento a la revisión</h3>
           <pre id="cmd-pr" class="code-block"><code>{html.escape(pr_cmds)}</code></pre>
+          <p style="font-size:0.84rem;color:var(--c-text-muted);margin-top:0.65rem;">Tras abrir el Pull Request, GitHub Actions ejecuta automáticamente el validador. Si un chequeo aparece en rojo o la persona revisora solicita ajustes, corrige en tu misma rama y ejecuta <code>git push</code>: el PR se actualizará sin crear uno nuevo.</p>
           <div class="card-footer">
             <button type="button" class="btn btn-outline btn-xs" data-copy-target="cmd-pr">Copiar comandos</button>
           </div>
@@ -1040,7 +1368,7 @@ gh pr create --repo {canonical_slug} --base main --head TU_USUARIO_GITHUB:feat/n
           <p>Este repositorio incluye cuatro formularios estructurados en <code>.github/ISSUE_TEMPLATE/</code>:</p>
           <ul>
             <li><strong>Tarea del PMV:</strong> resultado concreto, criterio de aceptación y fecha objetivo propuesta.</li>
-            <li><strong>Bloqueo o solicitud de apoyo:</strong> dificultad técnica o de datos y ayuda requerida.</li>
+            <li><strong>Bloqueo o solicitud de apoyo:</strong> dificultad técnica o de datos y ayuda requerida (atendido por la facilitación técnica del clúster).</li>
             <li><strong>Solicitud de revisión:</strong> enlace a evidencia para revisión técnica o validación.</li>
             <li><strong>Contribución al Atlas:</strong> revisión de metadatos antes de pasar a publicado.</li>
           </ul>
@@ -1179,13 +1507,20 @@ def main() -> int:
                         "size_bytes": f.stat().st_size,
                     }
                 )
+    effective_repo_slug = (
+        ctx.github_repository
+        if ctx.github_repository
+        else (ctx.canonical_repository if ctx.effective_mode == "canonical" else None)
+    )
     write_deterministic(
         capas_out_dir / "index.json",
         json.dumps(
             {
                 "folder": "geovisor/capas",
                 "project_id": manifest["id"],
-                "repository": ctx.canonical_repository,
+                "repository": effective_repo_slug,
+                "canonical_repository": ctx.canonical_repository,
+                "effective_mode": ctx.effective_mode,
                 "files": indexed_files,
             },
             ensure_ascii=False,
