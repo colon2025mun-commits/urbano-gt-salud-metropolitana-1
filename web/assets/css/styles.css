@@ -63,6 +63,33 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
+}
+
+.container,
+.header-inner,
+.brand,
+.brand-text,
+.hero,
+.hero-lead,
+.card,
+.prose,
+.geovisor-shell,
+.geovisor-sidebar,
+.geovisor-stage,
+.status-strip,
+.status-cell {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+
+code {
+  overflow-wrap: anywhere;
+}
+
+pre code {
+  overflow-wrap: normal;
 }
 
 a {
@@ -454,13 +481,13 @@ main {
 
 .grid-3 {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
   gap: 1.25rem;
 }
 
 .grid-2 {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
   gap: 1.25rem;
 }
 

@@ -9,9 +9,10 @@
 
   var BASEMAPS = {
     "carto-positron": {
-      name: "Carto Claro (Positron)",
-      tiles: ["https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"],
-      attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
+      name: "Mapa Claro (OpenStreetMap / Humanitario)",
+      styleUrl: "https://tiles.openfreemap.org/styles/positron",
+      tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+      attribution: "&copy; OpenStreetMap contributors &copy; OpenFreeMap"
     },
     "osm-standard": {
       name: "OpenStreetMap Estándar",
@@ -19,9 +20,10 @@
       attribution: "&copy; OpenStreetMap contributors"
     },
     "carto-dark": {
-      name: "Carto Oscuro (Contraste)",
-      tiles: ["https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"],
-      attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
+      name: "Modo Oscuro Vectorial (OpenFreeMap)",
+      styleUrl: "https://tiles.openfreemap.org/styles/dark",
+      tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+      attribution: "&copy; OpenStreetMap contributors &copy; OpenFreeMap"
     },
     "esri-imagery": {
       name: "Imagen Satelital de Referencia",
@@ -31,7 +33,10 @@
   };
 
   function makeStyle(basemapKey) {
-    var bm = BASEMAPS[basemapKey] || BASEMAPS["carto-positron"];
+    var bm = BASEMAPS[basemapKey] || BASEMAPS["osm-standard"];
+    if (bm.styleUrl) {
+      return bm.styleUrl;
+    }
     return {
       version: 8,
       sources: {
