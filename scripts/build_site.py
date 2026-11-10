@@ -607,7 +607,17 @@ def build_aplicacion_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: 
 
     runtime_cfg = dict(layers_cfg)
     runtime_cfg["site_base_url"] = ctx.site_url("")
+    runtime_cfg["repository_slug"] = ctx.canonical_repository
+    runtime_cfg["repository_branch"] = "main"
     safe_json_cfg = json.dumps(runtime_cfg, ensure_ascii=False).replace("</", "<\\/")
+
+    repo_capas_gh_btn = ""
+    if manifest["links"].get("repository"):
+        gh_capas_url = manifest["links"]["repository"].rstrip("/") + "/tree/main/geovisor/capas"
+        repo_capas_gh_btn = (
+            f'<a class="btn btn-outline btn-xs" href="{html.escape(gh_capas_url, quote=True)}" '
+            f'target="_blank" rel="noopener noreferrer">Abrir geovisor/capas/ en GitHub ↗</a>'
+        )
 
     hero = f"""
     <section class="hero">
@@ -618,7 +628,7 @@ def build_aplicacion_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: 
           {badge_html(manifest['status']['demo'], 'Estado Demo')}
         </div>
         <h1>Geovisor del proyecto y espacio de integración de capas</h1>
-        <p class="hero-lead">Visualizador construido sobre MapLibre GL JS y sincronizado con el archivo de proyecto <code>geovisor/proyecto.geolibre.json</code> para desplegar las capas generadas por la iniciativa sin simular resultados inexistentes.</p>
+        <p class="hero-lead">Visualizador construido sobre MapLibre GL JS y sincronizado con <code>geovisor/proyecto.geolibre.json</code> y la carpeta <code>geovisor/capas/</code> del repositorio para desplegar capas en formatos compatibles con GeoLibre.</p>
       </div>
     </section>
     """
@@ -628,7 +638,7 @@ def build_aplicacion_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: 
     body = f"""
     <div class="callout">
       <strong>Nota de integridad cartográfica ({esc(mv.get('scale_label', 'Escala del perfil'))})</strong>
-      <span>{esc(mv.get('reference_note'))} Mientras una capa permanezca <em>En preparación</em>, su interruptor se mantiene desactivado y no se dibujan geometrías ficticias.</span>
+      <span>{esc(mv.get('reference_note'))} Los límites administrativos procedentes de fuentes abiertas (OpenStreetMap ODbL) se muestran con carácter referencial hasta su homologación institucional.</span>
     </div>
 
     <section class="section" id="geovisor-app">
@@ -636,17 +646,18 @@ def build_aplicacion_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: 
         <aside class="geovisor-sidebar" aria-label="Controles y capas del geovisor">
           <div class="geovisor-tabs" role="tablist">
             <button type="button" class="geovisor-tab is-active" data-gv-tab="layers">Capas ({len(layers_cfg.get('layers', []))})</button>
-            <button type="button" class="geovisor-tab" data-gv-tab="local">Probar GeoJSON</button>
-            <button type="button" class="geovisor-tab" data-gv-tab="embed">GeoLibre App</button>
+            <button type="button" class="geovisor-tab" data-gv-tab="repo-folder">Carpeta repo</button>
+            <button type="button" class="geovisor-tab" data-gv-tab="local">Archivo local</button>
+            <button type="button" class="geovisor-tab" data-gv-tab="embed">GeoLibre</button>
           </div>
 
           <div class="geovisor-panel is-active" data-gv-panel="layers">
             <div class="filter-field" style="margin-bottom:0.75rem;">
               <label for="gv-basemap-select">Mapa base de referencia</label>
               <select id="gv-basemap-select">
-                <option value="carto-positron">Carto Claro (Positron)</option>
+                <option value="carto-positron">Mapa Claro Vectorial (OpenFreeMap)</option>
                 <option value="osm-standard">OpenStreetMap Estándar</option>
-                <option value="carto-dark">Carto Oscuro (Contraste)</option>
+                <option value="carto-dark">Modo Oscuro Vectorial (OpenFreeMap)</option>
                 <option value="esri-imagery">Imagen Satelital (Referencia visual)</option>
               </select>
             </div>
@@ -657,18 +668,27 @@ def build_aplicacion_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: 
             {"".join(groups_html)}
           </div>
 
+          <div class="geovisor-panel" data-gv-panel="repo-folder">
+            <h3 style="margin-top:0;font-size:1rem;color:var(--c-navy);">Cargar capa desde carpeta del repositorio</h3>
+            <p style="font-size:0.83rem;">Lee automáticamente los archivos geoespaciales subidos a <code>geovisor/capas/</code> en este repositorio (formatos compatibles con GeoLibre: <code>.geojson</code>, <code>.kml</code>, <code>.geolibre.json</code>, <code>.pmtiles</code>, <code>.fgb</code>, <code>.tif</code> COG, <code>.geoparquet</code>).</p>
+            <div style="display:flex;flex-wrap:wrap;gap:0.45rem;margin-bottom:0.75rem;">
+              <button type="button" id="gv-refresh-repo-folder" class="btn btn-teal btn-xs">Leer / Refrescar carpeta</button>
+              {repo_capas_gh_btn}
+            </div>
+            <p id="gv-repo-folder-status" style="font-size:0.8rem;color:var(--c-teal-dark);font-weight:600;margin-bottom:0.6rem;">Consultando carpeta geovisor/capas/...</p>
+            <div id="gv-repo-folder-list"></div>
+          </div>
+
           <div class="geovisor-panel" data-gv-panel="local">
-            <h3 style="margin-top:0;font-size:1rem;color:var(--c-navy);">Inspeccionar capa local (.geojson)</h3>
-            <p style="font-size:0.84rem;">Durante los laboratorios puedes arrastrar o seleccionar un archivo <code>.geojson</code> exportado desde QGIS o Google Earth Engine para verificar su posición y atributos sobre el mapa base. Los datos no salen de tu navegador.</p>
-            <div class="dropzone" id="gv-dropzone" tabindex="0" role="button" aria-label="Seleccionar archivo GeoJSON local">
-              <strong>Haz clic o arrastra aquí un archivo .geojson</strong>
+            <h3 style="margin-top:0;font-size:1rem;color:var(--c-navy);">Inspeccionar archivo desde tu equipo</h3>
+            <p style="font-size:0.84rem;">Arrastra o selecciona un archivo <code>.geojson</code> o <code>.kml</code> desde tu computadora para verificarlo antes de subirlo a <code>geovisor/capas/</code>.</p>
+            <div class="dropzone" id="gv-dropzone" tabindex="0" role="button" aria-label="Seleccionar archivo GeoJSON o KML local">
+              <strong>Haz clic o arrastra aquí un .geojson / .kml</strong>
               <div style="font-size:0.78rem;margin-top:0.25rem;">WGS84 (EPSG:4326) recomendado</div>
             </div>
-            <input type="file" id="gv-local-geojson-input" accept=".geojson,.json,application/geo+json,application/json" class="hidden">
+            <input type="file" id="gv-local-geojson-input" accept=".geojson,.json,.kml,application/geo+json,application/json" class="hidden">
             <p id="gv-local-status" style="font-size:0.82rem;color:var(--c-teal-dark);font-weight:600;">Ningún archivo temporal cargado.</p>
             <button type="button" id="gv-clear-local" class="btn btn-outline btn-xs hidden">Quitar capa temporal</button>
-            <hr style="border:none;border-top:1px solid var(--c-border);margin:1rem 0;">
-            <p style="font-size:0.8rem;margin:0;"><strong>¿Cómo publicarla para todo el equipo?</strong><br>1) Copia el archivo validado en <code>geovisor/data/</code>.<br>2) En <code>geovisor/layers.json</code> asigna su <code>source_path</code> y cambia <code>status</code> a <code>"en_revision"</code> o <code>"publicado"</code>.<br>3) Ejecuta <code>build_site.py</code> y abre una PR.</p>
           </div>
 
           <div class="geovisor-panel" data-gv-panel="embed">
@@ -685,6 +705,7 @@ def build_aplicacion_page(ctx: SiteContext, manifest: dict[str, Any], repo_cfg: 
           <div class="geovisor-toolbar">
             <div><strong>{esc(layers_cfg.get('title', manifest['title']))}</strong> · Motor MapLibre / GeoLibre</div>
             <div class="geovisor-toolbar-actions">
+              <button type="button" id="gv-open-folder-tab" class="btn btn-teal btn-xs">Cargar desde carpeta</button>
               <button type="button" id="gv-reset-view" class="btn btn-outline-light btn-xs">Encuadre inicial</button>
               <a class="btn btn-outline-light btn-xs" href="{geolibre_json_href}">JSON GeoLibre</a>
               <a id="btn-open-geolibre-studio" class="btn btn-primary btn-xs" href="https://web.geolibre.app/" target="_blank" rel="noopener noreferrer">Abrir en GeoLibre Studio ↗</a>
@@ -1137,6 +1158,41 @@ def main() -> int:
         for f in sorted(data_layers_dir.iterdir()):
             if f.is_file() and f.name != ".gitkeep":
                 shutil.copy2(f, out_dir / "geovisor" / "data" / f.name)
+
+    # Indexar y publicar la carpeta geovisor/capas/ (formatos compatibles con GeoLibre)
+    geolibre_exts = {".geojson", ".json", ".kml", ".pmtiles", ".fgb", ".tif", ".tiff", ".parquet", ".geoparquet"}
+    capas_src_dir = ROOT / "geovisor" / "capas"
+    capas_out_dir = out_dir / "geovisor" / "capas"
+    capas_out_dir.mkdir(parents=True, exist_ok=True)
+    indexed_files: list[dict[str, Any]] = []
+    if capas_src_dir.exists():
+        for f in sorted(capas_src_dir.iterdir()):
+            if not f.is_file() or f.name in (".gitkeep", "README.md", "index.json"):
+                continue
+            if f.suffix.lower() in geolibre_exts or f.name.lower().endswith(".geolibre.json"):
+                shutil.copy2(f, capas_out_dir / f.name)
+                indexed_files.append(
+                    {
+                        "name": f.name,
+                        "path": f"geovisor/capas/{f.name}",
+                        "format": "geolibre" if f.name.lower().endswith(".geolibre.json") else f.suffix.lower().lstrip("."),
+                        "size_bytes": f.stat().st_size,
+                    }
+                )
+    write_deterministic(
+        capas_out_dir / "index.json",
+        json.dumps(
+            {
+                "folder": "geovisor/capas",
+                "project_id": manifest["id"],
+                "repository": ctx.canonical_repository,
+                "files": indexed_files,
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+    )
 
     # Exportar JSONs públicos seleccionados
     write_deterministic(

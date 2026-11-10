@@ -244,6 +244,7 @@ def validate_site(site_dir: Path) -> list[str]:
         "colaborar/index.html",
         "geovisor/layers.json",
         "geovisor/proyecto.geolibre.json",
+        "geovisor/capas/index.json",
         "data/project.json",
         "data/build-meta.json",
         "assets/css/styles.css",
