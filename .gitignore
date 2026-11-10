@@ -1,6 +1,7 @@
 # Artefacto generado de publicación
 site/
 site_fork_test/
+resultados_tiff/
 
 # Entornos y cachés Python
 __pycache__/
